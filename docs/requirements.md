@@ -23,7 +23,7 @@
 
 | 項目 | 選定内容 |
 |---|---|
-| フロントエンド/バックエンド | Next.js（App Router）+ JavaScript |
+| フロントエンド/バックエンド | Next.js（App Router）+ TypeScript |
 | データベース | PostgreSQL（Vercel Marketplace経由の Neon） |
 | 認証 | Auth.js（NextAuth） |
 | デプロイ先 | Vercel |
@@ -32,7 +32,7 @@
 
 ### 選定理由・補足
 - Next.js + Vercelの組み合わせは環境構築・デプロイが一本化でき、個人〜小規模複数ユーザー向けアプリに適している。
-- TypeScriptではなくJavaScriptを採用（開発者がJavaScript経験のみのため、学習コストを抑える）。将来的な型安全化（JSDocやTypeScript移行）は選択可能な拡張とする。
+- `create-next-app`でのプロジェクト作成時にTypeScriptを採用。開発者はJavaScript経験のみだが、Next.js標準テンプレートに合わせてTypeScriptで進める（型エラーで詰まった際は都度サポートする）。
 - 書籍検索は日本語書籍の精度が高い楽天ブックスAPIを優先し、ヒットしない場合に書籍カバー範囲の広いGoogle Books APIで補完する。
 
 ## 5. 機能要件
