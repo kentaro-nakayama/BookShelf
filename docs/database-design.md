@@ -191,8 +191,22 @@ OAuthプロバイダ（Google）との連携情報を保持する。
 
 ## 4. 設計方針・補足
 
-- **users / accounts / sessions** はAuth.js（NextAuth）のPostgresアダプタ標準スキーマに準拠する。実装時に使用するアダプタ（`@auth/pg-adapter` / Prisma / Drizzle 等）によってカラム名の大文字小文字・命名規則（camelCase/snake_case）が変わる場合があるため、ORM選定時に最終調整する。
+- **ORMはDrizzleを採用**（実装済み）。当初Prismaを検討したが、インストールされたバージョンがPrisma独自のホスティング基盤(Prisma Compute/Platform)前提の破壊的変更が大きいプレリリース版だったため、プレーンなPostgres接続文字列でそのまま使えるDrizzleに変更した。
+- **users / accounts / sessions** はAuth.js（NextAuth）のPostgresアダプタ標準スキーマに準拠する。Drizzle用の公式アダプタ `@auth/drizzle-adapter` を使う想定。
 - **books** は外部APIのレスポンスをキャッシュする目的のテーブル。同じ本を複数ユーザーが登録しても `books` テーブルには1件のみ保持し、ユーザーごとの情報（ステータス・評価・感想・ジャンル）は `user_books` / `user_book_genres` 側に持たせる正規化設計。
 - 主キーは `genres`（固定マスタ、件数少）を除き全て `UUID`（`gen_random_uuid()`）を採用し、Auth.jsの標準スキーマと一貫性を持たせる。
 - `user_books.book_id` の削除制約は `ON DELETE RESTRICT` とし、本棚に登録されている本がうっかり削除されることを防ぐ（本の削除機能自体は現時点で要件に含まれない）。
-- ORM（Prisma / Drizzle等）は本設計書の内容をベースに実装フェーズで選定する。
+
+## 5. 実装ファイルの対応
+
+実際のスキーマ定義・マイグレーションは以下のファイルで管理する。
+
+| ファイル | 役割 |
+|---|---|
+| `db/schema.ts` | テーブル定義の実体（このドキュメントの2章をTypeScriptコード化したもの） |
+| `drizzle.config.ts` | `drizzle-kit`（マイグレーション生成・適用CLI）の設定 |
+| `drizzle/*.sql` | `db/schema.ts` の変更から自動生成されるマイグレーションSQL（Git管理対象） |
+| `db/index.ts` | アプリ実行時に使うDBクライアント |
+| `db/seed.ts` | ジャンル等の初期データ投入スクリプト（`npm run db:seed`） |
+
+スキーマを変更する時の流れ: `db/schema.ts` を編集 → `npm run db:generate` でSQL差分を生成 → `npm run db:migrate` でNeonに適用。
