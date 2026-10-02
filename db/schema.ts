@@ -18,6 +18,7 @@
 // 型(integer, text 等): 使うカラムの型だけ、その都度ここに追加していく
 //
 import { pgTable, integer, text, smallint, date, timestamp, uuid, pgEnum, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // ----------------------------------------------------------------------------
 // pgTable の基本形
@@ -187,3 +188,14 @@ export const userBookGenres = pgTable('user_book_genres', {
     index('user_book_genres_user_book_id_index').on(table.userBookId),
     index('user_book_genres_genre_id_index').on(table.genreId),
 ]);
+
+// relationの定義
+export const userBooksRelations = relations(userBooks, ({ one }) => ({
+    // userBooksテーブルとbooksテーブルのリレーションを定義
+    // userBooksから見て，booksの情報は1対1の関係になる
+    book: one(books, {
+        // userBooks.bookId が参照する books.id を指定
+        fields: [userBooks.bookId], 
+        references: [books.id],
+    }),
+}));
