@@ -26,36 +26,15 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 // ----------------------------------------------------------------------------
-// TODO: ログイン状態で表示を分岐する
+// ログイン状態で表示を分岐する
 // ----------------------------------------------------------------------------
-// 手順:
-//   1. コンポーネントを async function にする（auth()は非同期関数のため、
-//      中でawaitする必要がある。これまでのdb/seed.tsのmain()と同じ考え方）
-//   2. `const session = await auth();` でログイン状態を取得
-//   3. `session` が存在する（ログイン中）か `null`（未ログイン）かで
-//      返すJSXを分岐させる
-//
-// 【ログイン中の場合に表示したいもの】
-//   - ユーザー名: session.user?.name
-//   - ユーザー画像: session.user?.image（<img>タグで表示できる）
-//   - ログアウトボタン:
-//     <form action={async () => {
-//         "use server";
-//         await signOut();
-//     }}>
-//         <Button type="submit">ログアウト</Button>
-//     </form>
-//     （前回書いたsignInのフォームと全く同じ形。signOutに差し替えるだけ）
-//
-// 【未ログインの場合に表示するもの】
-//   → 前回まで書いていたGoogleログインボタンのフォームをそのまま使う
-//
-// ここに書いてみる ↓
+
 import { auth, signIn, signOut } from "@/auth";
 
 export default async function Home() {
     const session = await auth();
 
+    // ログインしている場合
     if (session) {
         return (
             <div>
@@ -82,6 +61,7 @@ export default async function Home() {
         )
     }
 
+    // ログインしていない場合
     return (
         <div>
             <form action={async () => {
