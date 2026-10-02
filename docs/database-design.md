@@ -29,8 +29,7 @@ erDiagram
         text provider_account_id
     }
     sessions {
-        uuid id PK
-        text session_token
+        text session_token PK
         uuid user_id FK
         timestamptz expires
     }
@@ -99,17 +98,17 @@ OAuthプロバイダ（Google）との連携情報を保持する。
 
 - 制約: `UNIQUE (provider, provider_account_id)`
 - 外部キー: `user_id REFERENCES users(id) ON DELETE CASCADE`
+- 実装メモ: `refresh_token`〜`session_state`の6カラムは、Drizzleスキーマ上もTSのプロパティ名をsnake_caseのままにしている（`@auth/drizzle-adapter`の型定義がこの命名を前提にしているため。NextAuth v4時代からの命名を引き継いだ、アダプタ側の歴史的な仕様）。
 
 ### 2.3 sessions（Auth.js管理テーブル）
 
 | カラム名 | 型 | NULL | デフォルト | 説明 |
 |---|---|---|---|---|
-| id | uuid | NOT NULL | gen_random_uuid() | 主キー |
-| session_token | text | NOT NULL | - | セッショントークン |
+| session_token | text | NOT NULL | - | セッショントークン（主キー） |
 | user_id | uuid | NOT NULL | - | users.id への外部キー |
 | expires | timestamptz | NOT NULL | - | セッション有効期限 |
 
-- 制約: `UNIQUE (session_token)`
+- 主キー: `session_token`（独立したid列は持たない。`@auth/drizzle-adapter`が「session_token自体が主キー」という前提の設計のため）
 - 外部キー: `user_id REFERENCES users(id) ON DELETE CASCADE`
 
 ### 2.4 books（アプリ独自テーブル）

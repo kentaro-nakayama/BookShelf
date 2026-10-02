@@ -120,14 +120,19 @@ export const accounts = pgTable(
         type: text("type").notNull(), // "oauth" 固定（今回はGoogleのみ使うため）
         provider: text("provider").notNull(), // "google" 固定
         providerAccountId: text("provider_account_id").notNull(), // Google側のアカウントID
-        // 以下はOAuthのトークン情報。Auth.jsが自動的に読み書きする
-        refreshToken: text("refresh_token"),
-        accessToken: text("access_token"),
-        expiresAt: integer("expires_at"),
-        tokenType: text("token_type"),
+        // 以下はOAuthのトークン情報。Auth.jsが自動的に読み書きする。
+        // ※ ここだけ意図的にTSのプロパティ名もsnake_caseにしている。
+        //   @auth/drizzle-adapter（DrizzleAdapterの型定義）が、この6項目に関しては
+        //   「プロパティ名そのもの」がsnake_caseであることを前提にしているため
+        //   （NextAuth v4時代からの命名を引き継いだ、アダプタ側の歴史的な仕様）。
+        //   他のカラム(userId, providerAccountId等)はcamelCaseのままでよい。
+        refresh_token: text("refresh_token"),
+        access_token: text("access_token"),
+        expires_at: integer("expires_at"),
+        token_type: text("token_type"),
         scope: text("scope"),
-        idToken: text("id_token"),
-        sessionState: text("session_state"),
+        id_token: text("id_token"),
+        session_state: text("session_state"),
     },
     (table) => [
         // 同じGoogleアカウントで二重にレコードができないようにする一意制約
@@ -139,9 +144,10 @@ export const accounts = pgTable(
 );
 
 // sessions: 「誰が、いつまでログイン状態が有効か」を表すテーブル
+// ※ 独立したid(uuid)は持たない。@auth/drizzle-adapterは「sessionToken自体が
+//   主キー」という前提の設計になっているため、それに合わせている。
 export const sessions = pgTable("sessions", {
-    id: uuid("id").defaultRandom().primaryKey(),
-    sessionToken: text("session_token").notNull().unique(), // ブラウザのCookieに保存される鍵
+    sessionToken: text("session_token").primaryKey(), // ブラウザのCookieに保存される鍵＝主キー
     userId: uuid("user_id")
         .notNull()
         .references(() => users.id, { onDelete: "cascade" }),
