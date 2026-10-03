@@ -28,10 +28,12 @@ import { userBooks, userBookGenres, genres } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 //
 // updateBook:       このフォームの送信先Server Action
-import { updateBook } from "./actions";
+import { updateBook, removeFromShelf } from "./actions";
 //
 // BookShelfForm:    追加画面と共通のフォーム部品
 import { BookShelfForm } from "@/components/book-shelf-form";
+
+import { Button } from "@/components/ui/button";
 
 // ----------------------------------------------------------------------------
 // TODO 1: ルートパラメータ(id)とログイン状態を取得する
@@ -139,6 +141,9 @@ export default async function BookDetailPage({params}: PageProps<"/books/[id]">)
                 action={updateBook.bind(null, userBook.id)}
                 submitLabel="更新する"
             />
+            <form action={removeFromShelf.bind(null, userBook.id)}>
+                <Button type="submit" variant="destructive">本を削除</Button>
+            </form>
         </div>
     );
 }

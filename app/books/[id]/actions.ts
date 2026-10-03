@@ -84,3 +84,26 @@ export async function updateBook(userBookId: string, formData: FormData) {
 
     redirect("/");
 }
+
+// 本棚から削除する。呼び出し方は <form action={removeFromShelf.bind(null, userBookId)}>。
+//
+// user_books行を削除するだけでよい。紐づく user_book_genres は
+// db/schema.ts で `onDelete: "cascade"` を指定済みなので、user_books側を
+// 消せばDBが自動的に一緒に削除してくれる（手動でdeleteする必要はない）。
+export async function removeFromShelf(userBookId: string) {
+    const session = await auth();
+    if (!session?.user?.id) {
+        throw new Error("ログインが必要です");
+    }
+
+    // 更新時と同じ理由で、削除も「自分の本棚登録か」を条件に含める
+    // （whereの条件に含めることで、他人のデータは0件ヒットになり
+    // 削除されない、という形で認可チェックを兼ねている）。
+    await db
+        .delete(userBooks)
+        .where(
+            and(eq(userBooks.id, userBookId), eq(userBooks.userId, session.user.id)),
+        );
+
+    redirect("/");
+}
