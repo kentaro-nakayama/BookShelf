@@ -72,9 +72,9 @@ import { searchBooks } from "@/lib/books/search";
 //
 // ここに書いてみる ↓
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import Image from "next/image";
-import { addBookToShelf } from "./actions";
+import Link from "next/link";
 
 export default async function SearchPage({searchParams}: PageProps<"/books/search">) {
     const params = await searchParams;
@@ -100,9 +100,18 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
                             {book.thumbnailUrl && <Image src={book.thumbnailUrl} alt={book.title} width={128} height={192} />}
                         </div>
                         <p>{book.publishedDate}</p>
-                        <form action={addBookToShelf.bind(null, book)} method="post">
-                            <Button type="submit">本棚に追加</Button>
-                        </form>
+                        <Link href={`/books/add?${new URLSearchParams({
+                            externalSource: book.externalSource,
+                            externalId: book.externalId,
+                            title: book.title,
+                            author: book.author ?? "",
+                            publisher: book.publisher ?? "",
+                            publishedDate: book.publishedDate ?? "",
+                            thumbnailUrl: book.thumbnailUrl ?? "",
+                            isbn: book.isbn ?? "",
+                        }).toString()}`} className={buttonVariants()}>
+                            本棚に追加
+                        </Link>
                     </div>
 
                 )) }
