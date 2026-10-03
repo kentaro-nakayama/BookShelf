@@ -8,6 +8,7 @@
 // 最初に必要なimport
 // ----------------------------------------------------------------------------
 import Image from "next/image";
+import Link from "next/link";
 // auth:      今ログイン中かどうかを調べる関数（header.tsxで使ったのと同じ）
 import { auth } from "@/auth";
 //
@@ -58,6 +59,7 @@ export default async function Home() {
                             {myBook.book.thumbnail_url && <Image src={myBook.book.thumbnail_url} alt={myBook.book.title} width={128} height={192} />}
                         </div>
                         <p>{myBook.book.published_date}</p>
+                        <Link href={`/books/${myBook.id}`}>詳細を見る</Link>
                 </div>
             ))}
         </div>

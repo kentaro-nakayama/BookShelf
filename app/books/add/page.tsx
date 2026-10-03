@@ -21,8 +21,8 @@ import { genres } from "@/db/schema";
 // confirmAddBook:   このフォームが送信された時に呼ばれるServer Action
 import { confirmAddBook } from "./actions";
 //
-// Button:           これまでも使ってきたUI部品
-import { Button } from "@/components/ui/button";
+// BookShelfForm:    追加・編集で共通のフォーム部品
+import { BookShelfForm } from "@/components/book-shelf-form";
 //
 // BookSearchResult: 復元する本のデータの型（lib/books/types.ts）
 import type { BookSearchResult } from "@/lib/books/types";
@@ -69,38 +69,13 @@ export default async function AddBookPage({
 
     return (
         <div>
-            <form action={confirmAddBook.bind(null, book)}>
-                <p>{book.title}</p>
-                <div className="set-status-area">
-                    <select name="status" defaultValue="want_to_read">
-                        <option value="want_to_read">読みたい</option>
-                        <option value="reading">読書中</option>
-                        <option value="finished">読了</option>
-                    </select>
-                </div>
-                <div className="set-rating-area">
-                    <select name="rating" defaultValue="">
-                        <option value="">評価なし</option>
-                        <option value="1">★1</option>
-                        <option value="2">★2</option>
-                        <option value="3">★3</option>
-                        <option value="4">★4</option>
-                        <option value="5">★5</option>
-                    </select>
-                </div>
-                <div className="set-review-area">
-                    <textarea name="review" placeholder="感想を書く（任意）" />
-                </div>
-                <div className="set-genres-area">
-                    {allGenres.map((genre) => (
-                        <label key={genre.id}>
-                            <input type="checkbox" name="genreIds" value={genre.id} />
-                            {genre.name}
-                        </label>
-                    ))}
-                </div>
-                <Button type="submit">追加</Button>
-            </form>
+            <h2>本を追加</h2>
+            <BookShelfForm
+                bookTitle={book.title}
+                allGenres={allGenres}
+                action={confirmAddBook.bind(null, book)}
+                submitLabel="追加"
+            />
         </div>
     )
 }
