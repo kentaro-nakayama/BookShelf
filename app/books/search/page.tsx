@@ -26,7 +26,21 @@ import type { CSSProperties } from "react";
 export default async function SearchPage({searchParams}: PageProps<"/books/search">) {
     const params = await searchParams;
     const query = typeof params.q === "string" ? params.q : "";
-    const searchResult = query ? await searchBooks(query) : [];
+
+    // searchBooks()は楽天・Google Booksの両方のAPI呼び出しに失敗すると
+    // 例外を投げる(lib/books/search.tsを参照)。ここでtry/catchしておかないと、
+    // 外部APIの不調がそのままページ全体のクラッシュ(サーバーエラー画面)に
+    // つながってしまうため、失敗はエラーメッセージとして画面に出すだけに留める。
+    let searchResult: Awaited<ReturnType<typeof searchBooks>> = [];
+    let searchFailed = false;
+    if (query) {
+        try {
+            searchResult = await searchBooks(query);
+        } catch (error) {
+            console.error("書籍検索に失敗しました:", error);
+            searchFailed = true;
+        }
+    }
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8 sm:px-12">
@@ -42,7 +56,10 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
                 <button type="submit" className="ice-button sm:w-auto">検索</button>
             </form>
             <div className="flex flex-wrap gap-5">
-                { query && searchResult.length === 0 && <p>見つかりませんでした</p>}
+                { searchFailed && (
+                    <p>検索中にエラーが発生しました。しばらくしてからもう一度お試しください。</p>
+                )}
+                { !searchFailed && query && searchResult.length === 0 && <p>見つかりませんでした</p>}
                 { searchResult.map((book, index) => (
                     <div
                         className="ice-card w-full sm:w-[270px]"

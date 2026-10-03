@@ -10,12 +10,23 @@ import { searchGoogleBooks } from "./google-books";
 import type { BookSearchResult } from "./types";
 
 export async function searchBooks(query: string): Promise<BookSearchResult[]> {
-    const rakutenResults = await searchRakutenBooks(query);
+    // 楽天ブックスAPIがエラー(レート制限・一時的な障害など)を返した場合、
+    // ここで例外を外に投げてしまうと検索ページ全体がクラッシュしてしまう。
+    // 「0件だった」場合と同じ扱いにして、Google Booksへのフォールバックに
+    // つなげることで、片方のAPIの不調が検索機能全体を止めないようにする。
+    let rakutenResults: BookSearchResult[] = [];
+    try {
+        rakutenResults = await searchRakutenBooks(query);
+    } catch (error) {
+        console.error("楽天ブックスAPIの呼び出しに失敗しました:", error);
+    }
 
     if (rakutenResults.length > 0) {
         return rakutenResults;
     }
 
-    // 楽天で1件もヒットしなかった場合だけ、Google Booksで検索する
+    // 楽天で1件もヒットしなかった場合(エラーだった場合を含む)だけ、
+    // Google Booksで検索する。こちらが失敗した場合は、呼び出し元
+    // (app/books/search/page.tsx)でまとめてエラーハンドリングする。
     return searchGoogleBooks(query);
 }
