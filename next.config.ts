@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      {
+        // 楽天ブックスの表紙画像
+        protocol: "https",
+        hostname: "thumbnail.image.rakuten.co.jp",
+      },
+      {
+        // Google Booksの表紙画像
+        protocol: "https",
+        hostname: "books.google.com",
+      },
     ],
   },
 };
