@@ -7,6 +7,7 @@
 // ----------------------------------------------------------------------------
 // 最初に必要なimport
 // ----------------------------------------------------------------------------
+import Image from "next/image";
 // auth:      今ログイン中かどうかを調べる関数（header.tsxで使ったのと同じ）
 import { auth } from "@/auth";
 //
@@ -50,10 +51,13 @@ export default async function Home() {
     return (
         <div>
             {myBooks.map((myBook) => (
-                <div key={myBook.id}>
-                    <p>{myBook.book.title}</p>
-                    <p>{myBook.book.author}</p>
-                    <p>{myBook.status}</p>
+                <div key={myBook.book.id}>
+                        <p>{myBook.book.title}</p>
+                        <p>{myBook.book.author}</p>
+                        <div className="book-image">
+                            {myBook.book.thumbnail_url && <Image src={myBook.book.thumbnail_url} alt={myBook.book.title} width={128} height={192} />}
+                        </div>
+                        <p>{myBook.book.published_date}</p>
                 </div>
             ))}
         </div>
