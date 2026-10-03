@@ -2,23 +2,28 @@
 
 ## デプロイ後に対応が必要な項目（本番URLの追加）
 
-まだ一度もデプロイしておらず本番ドメインが未確定のため、ローカル開発用の設定のみで進めている。
-実際にVercelへデプロイし、本番URLが確定したタイミングで以下を追加する。
+本番ドメインが確定（`https://bookshelf-app-peach.vercel.app`、GitHub連携による自動デプロイ済み）したため、以下は対応済み。
 
 ### Google OAuth（Google Cloud Console）
 
-- [ ] 「承認済みのJavaScript生成元」に本番URLを追加（例: `https://<本番ドメイン>`）
-- [ ] 「承認済みのリダイレクトURI」に本番URLを追加（例: `https://<本番ドメイン>/api/auth/callback/google`）
-  - 現在登録済みなのは `http://localhost:3000` 関連のみ
+- [x] 「承認済みのJavaScript生成元」に本番URLを追加（`https://bookshelf-app-peach.vercel.app`）
+- [x] 「承認済みのリダイレクトURI」に本番URLを追加（`https://bookshelf-app-peach.vercel.app/api/auth/callback/google`）
+  - `http://localhost:3000` 関連も残したまま併用
+  - 本番URLでのGoogleログイン動作確認済み（2026-10-03）
 
 ### 楽天ウェブサービス（Rakuten Developers）
 
-- [ ] 「許可されたWebサイト」に本番ドメインを追加
-  - 現在は `localhost`（ローカル開発用）のみ登録予定
-  - 楽天デベロッパーズの「アプリ情報の確認」画面から後で編集可能
+- [x] アプリ登録完了、「許可されたWebサイト」に本番ドメイン（`bookshelf-app-peach.vercel.app`）を追加済み
+  - `127.0.0.1`（ローカル開発用）も登録済み
+  - アプリID取得済み（`RAKUTEN_APPLICATION_ID`として`.env.local`に追加済み）
 
 ### Vercel環境変数
 
-- [ ] 楽天ブックスAPIのアプリID（取得後の名称は未定、例: `RAKUTEN_APPLICATION_ID`）をVercelの環境変数（production/preview）に追加
-  - ローカルの`.env.local`には追加済み/追加予定だが、Vercel側は別途登録が必要
-- [x] `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `AUTH_SECRET` はVercel側も設定済み
+- [x] 楽天ブックスAPIのアプリID（`RAKUTEN_APPLICATION_ID`）をVercelの環境変数（production/preview/development）に追加済み
+- [x] `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `AUTH_SECRET` はVercel側も設定済み（2026-10-03にローテーション済み）
+
+## セキュリティインシデント記録（2026-10-03）
+
+- `.env.local`の中身を確認する際にClaudeが`Read`ツールを誤って使用し、会話ログに全ての秘密情報（DBパスワード、AUTH_SECRET、Googleクライアントシークレット等）が平文で表示される事故が発生
+- 対応: Neon DBパスワード、AUTH_SECRET、GOOGLE_CLIENT_SECRETを全てローテーション済み、動作確認済み
+- 教訓: 環境変数ファイルの中身を確認する際は、必ず`grep`等で値を伏せた方法を使う（`cat`や`Read`で直接開かない）
