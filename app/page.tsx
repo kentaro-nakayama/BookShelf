@@ -13,8 +13,9 @@ import Link from "next/link";
 // 渡すための型。TypeScriptは標準だと style に "--任意の名前" のような
 // キーを許可してくれないので、CSSPropertiesに手動でその型を追加している。
 import type { CSSProperties } from "react";
-// auth:      今ログイン中かどうかを調べる関数（header.tsxで使ったのと同じ）
-import { auth } from "@/auth";
+// auth, signIn: 今ログイン中かどうかを調べる関数と、Googleログインを
+//               開始するための関数（どちらもheader.tsxで使ったのと同じ）
+import { auth, signIn } from "@/auth";
 //
 // db:        DBクライアント
 import { db } from "@/db";
@@ -36,11 +37,49 @@ const STATUS_LABEL: Record<string, string> = {
 export default async function Home() {
     // ログイン状態を取得
     const session = await auth();
-    // 未ログインの場合はメッセージを表示して終了
+    // 未ログインの場合はサインイン画面を表示して終了
     if (!session) {
         return (
-            <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-12">
-                <p>ログインしてください</p>
+            <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 px-6 py-20 text-center sm:px-12">
+                {/* タイトル部分: アイコン + アプリ名 + キャッチコピー */}
+                <div className="flex flex-col items-center gap-4">
+                    <svg
+                        width="56"
+                        height="56"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#bfeaff"
+                        strokeWidth="1.4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                    >
+                        <path d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5C4.67 20 4 19.33 4 18.5v-13Z"></path>
+                        <path d="M20 5.5c0-.83-.67-1.5-1.5-1.5H13v16h5.5c.83 0 1.5-.67 1.5-1.5v-13Z"></path>
+                    </svg>
+                    <h1 className="text-4xl font-bold">BookShelf</h1>
+                    <p className="text-base text-[color:var(--ice-text-muted)]">
+                        読んだ本・読みたい本を、ひとつの本棚にまとめて管理しよう
+                    </p>
+                </div>
+
+                {/* サインインカード */}
+                <div className="ice-card w-full max-w-sm items-center gap-4 py-10">
+                    <p className="text-xl font-bold">さあ、はじめましょう</p>
+                    <p className="text-sm text-[color:var(--ice-text-muted)]">
+                        Googleアカウントでログインすると、あなた専用の本棚が作られます
+                    </p>
+                    <form
+                        action={async () => {
+                            "use server";
+                            await signIn("google");
+                        }}
+                    >
+                        <button type="submit" className="ice-button mt-2">
+                            Googleでログイン
+                        </button>
+                    </form>
+                </div>
             </div>
         )
     }

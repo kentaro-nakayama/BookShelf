@@ -1,53 +1,20 @@
 // ============================================================================
-// Drizzle スキーマ定義ファイル（自分で書く）
+// Drizzle スキーマ定義ファイル
 // ----------------------------------------------------------------------------
 // ここに書いたテーブル定義が「アプリが期待するDBの形」の正解(ソース・オブ・トゥルース)になる。
 // 設計内容は docs/database-design.md を参照。
-//
-// 進め方のおすすめ:
-//   1. genres（一番シンプル：外部キーなし、カラム2つ）から書いてみる
-//   2. books（外部キーなし、カラムは多いがシンプル）
-//   3. users / accounts / sessions（Auth.js用の決まったスキーマ、最後でOK）
-//   4. user_books / user_book_genres（外部キーあり、他のテーブルを定義してから）
 // ============================================================================
 
-// ----------------------------------------------------------------------------
-// 最初に必要なimport
-// ----------------------------------------------------------------------------
-// pgTable: テーブルを1つ定義するための関数（これが基本の型）
-// 型(integer, text 等): 使うカラムの型だけ、その都度ここに追加していく
-//
 import { pgTable, integer, text, smallint, date, timestamp, uuid, pgEnum, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// ----------------------------------------------------------------------------
-// pgTable の基本形
-// ----------------------------------------------------------------------------
-// export const 変数名 = pgTable("実際のテーブル名(DB上の名前)", {
-//   カラム名: 型("DB上のカラム名").制約1().制約2(),
-//   ...
-// });
-
-// ----------------------------------------------------------------------------
-// TODO 1: genres テーブル（docs/database-design.md 2.6節を参照）
-// ----------------------------------------------------------------------------
-// 必要なカラム:
-//   - id:   smallint（integer型を使う）, 主キー(primaryKey)
-//   - name: text, NOT NULL(notNull), UNIQUE(unique)
-//
-// ヒント: カラムの型のあとに .notNull() や .unique() や .primaryKey() を
-//        メソッドチェーンでつなげていく書き方になる。
-//
-
+// genres: 固定ジャンルマスタ（ユーザーは追加不可、開発者がseedで管理）
 export const genres = pgTable('genres', {
     id: smallint('id').primaryKey(),
     name: text('name').notNull().unique(),
 });
 
-// ----------------------------------------------------------------------------
-// TODO 2: books テーブル（外部キーなし）
-// ----------------------------------------------------------------------------
-// genres が書けたら次はこちら。docs/database-design.md 2.4節を参照。
+// books: 外部APIから取得した書籍情報のキャッシュ（複数ユーザーで共有）
 export const EnumExternalSource = pgEnum('enum_external_source', ['rakuten', 'google']);
 
 export const books = pgTable('books', {
@@ -86,11 +53,8 @@ export const books = pgTable('books', {
 });
 
 // ----------------------------------------------------------------------------
-// TODO 3: users / accounts / sessions（Auth.js標準スキーマ）
+// users / accounts / sessions（Auth.js標準スキーマ）
 // ----------------------------------------------------------------------------
-// docs/database-design.md 2.1〜2.3節を参照。カラム名・型を変えてはいけない
-// （Auth.jsのアダプタが前提にしている形だから）。
-//
 // ここは books と違って「自分で自由に設計していい部分」ではなく、
 // 後で導入する @auth/drizzle-adapter というアダプタが「このプロパティ名で
 // アクセスできるはず」と決め打ちしてくる契約。なので
@@ -155,11 +119,8 @@ export const sessions = pgTable("sessions", {
     expires: timestamp("expires", { withTimezone: true }).notNull(), // セッションの有効期限
 });
 
-// ----------------------------------------------------------------------------
-// TODO 4: user_books / user_book_genres（外部キーあり）
-// ----------------------------------------------------------------------------
-// 他のテーブルの変数（users, books, genres など）を .references(() => xxx.id)
-// のように参照する形になる。docs/database-design.md 2.5, 2.7節を参照。
+// user_books: 本棚の中心テーブル（ユーザー×本の登録情報）
+// user_book_genres: user_books と genres の多対多中間テーブル
 export const EnumStatus = pgEnum('enum_status', ['want_to_read', 'reading', 'finished']);
 
 export const userBooks = pgTable('user_books', {
