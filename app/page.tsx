@@ -9,6 +9,10 @@
 // ----------------------------------------------------------------------------
 import Image from "next/image";
 import Link from "next/link";
+// CSSProperties: styleプロパティに独自CSS変数(--ice-shine-delay)を
+// 渡すための型。TypeScriptは標準だと style に "--任意の名前" のような
+// キーを許可してくれないので、CSSPropertiesに手動でその型を追加している。
+import type { CSSProperties } from "react";
 // auth:      今ログイン中かどうかを調べる関数（header.tsxで使ったのと同じ）
 import { auth } from "@/auth";
 //
@@ -21,13 +25,23 @@ import { userBooks } from "@/db/schema";
 // eq, desc:  SQLの条件・並び順を書くためのヘルパー関数（drizzle-ormから提供）
 import { eq, desc } from "drizzle-orm";
 
+// ステータスの内部値(DB上の文字列)と、画面に出す日本語ラベル・バッジ用の
+// クラス名(globals.cssの.ice-status-pill--*)を対応付ける表。
+const STATUS_LABEL: Record<string, string> = {
+    want_to_read: "読みたい",
+    reading: "読書中",
+    finished: "読了",
+};
+
 export default async function Home() {
     // ログイン状態を取得
     const session = await auth();
     // 未ログインの場合はメッセージを表示して終了
     if (!session) {
         return (
-            <p>ログインしてください</p>
+            <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-12">
+                <p>ログインしてください</p>
+            </div>
         )
     }
     // ログインしている場合
@@ -45,23 +59,60 @@ export default async function Home() {
 
     if (myBooks.length === 0) {
         return (
-            <p>本が登録されていません</p>
+            <div className="mx-auto max-w-5xl px-6 py-16 flex flex-col items-center gap-4 text-center sm:px-12">
+                <p>本が登録されていません</p>
+                {/* 本を検索して本棚に追加する画面(/books/search)への入り口 */}
+                <Link href="/books/search" className="ice-button">
+                    本を追加する
+                </Link>
+            </div>
         )
     }
 
     return (
-        <div>
-            {myBooks.map((myBook) => (
-                <div key={myBook.book.id}>
-                        <p>{myBook.book.title}</p>
-                        <p>{myBook.book.author}</p>
-                        <div className="book-image">
-                            {myBook.book.thumbnail_url && <Image src={myBook.book.thumbnail_url} alt={myBook.book.title} width={128} height={192} />}
+        <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8 sm:px-12">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <h2 className="text-2xl font-bold">本棚</h2>
+                {/* 本を検索して本棚に追加する画面(/books/search)への入り口 */}
+                <Link href="/books/search" className="ice-button">
+                    本を追加する
+                </Link>
+            </div>
+            <div className="flex flex-wrap gap-5">
+                {myBooks.map((myBook, index) => (
+                    <div
+                        className="ice-card w-full sm:w-[270px]"
+                        key={myBook.book.id}
+                        // カードごとに光るタイミングをずらす(0s, 0.5s, 1s, ... を6枚ごとに繰り返す)
+                        style={{ "--ice-shine-delay": `${(index % 6) * 0.5}s` } as CSSProperties}
+                    >
+                        <span className={`ice-status-pill ice-status-pill--${myBook.status} self-start mb-3`}>
+                            {STATUS_LABEL[myBook.status]}
+                        </span>
+                        <div className="ice-cover">
+                            {myBook.book.thumbnail_url ? (
+                                <Image
+                                    src={myBook.book.thumbnail_url}
+                                    alt={myBook.book.title}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, 270px"
+                                    style={{ objectFit: "cover" }}
+                                />
+                            ) : (
+                                <span className="text-4xl font-bold opacity-50">
+                                    {myBook.book.title.slice(0, 1)}
+                                </span>
+                            )}
                         </div>
-                        <p>{myBook.book.published_date}</p>
-                        <Link href={`/books/${myBook.id}`}>詳細を見る</Link>
-                </div>
-            ))}
+                        <p className="ice-card-title">{myBook.book.title}</p>
+                        <p className="ice-card-author">{myBook.book.author}</p>
+                        <p className="ice-card-meta">{myBook.book.published_date}</p>
+                        <Link href={`/books/${myBook.id}`} className="ice-button mt-auto">
+                            詳細を見る
+                        </Link>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }

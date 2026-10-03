@@ -128,3 +128,423 @@
     @apply font-sans;
   }
 }
+
+/* ============================================================================
+ * 氷UI (ice-ui) テーマ ― ここから下は自分で追加したカスタムCSS
+ * ----------------------------------------------------------------------------
+ * 上の `@layer base { ... }` までは shadcn/ui の `init` コマンドが自動生成した
+ * 部分（Tailwindの初期設定）。ここから下は「ガラスのように透けたカード」を
+ * 実現するために自分で書いたスタイル。
+ *
+ * ポイント: わざと `@layer` で囲んでいない。
+ *   Tailwind v4は `@import "tailwindcss"` の内部で
+ *   `@layer theme, base, components, utilities;` という「CSSカスケードレイヤー」
+ *   を使っている。レイヤーの仕組み上、「レイヤーに属さないCSS」は
+ *   「どのレイヤーに書かれたCSSよりも常に優先される」というルールがある。
+ *   なので、shadcn/uiのButtonコンポーネントが持っている
+ *   Tailwindユーティリティクラス（bg-primaryなど）と名前が被らなくても、
+ *   万一スタイルがぶつかった場合に氷UI側を確実に勝たせるため、あえて
+ *   レイヤーの外に書いている。
+ * ========================================================================= */
+
+:root {
+    --ice-text: #f2fbff;
+    --ice-text-muted: rgba(242, 251, 255, 0.72);
+    --ice-accent: #ffd76e;
+}
+
+/* ページ全体の背景: 濃紺をベースに、青と紫のグロー(ネビュラ)と
+   小さな星をradial-gradientを重ねて表現している */
+body {
+    position: relative;
+    color: var(--ice-text);
+    background:
+        radial-gradient(circle at 18% 18%, rgba(70, 135, 225, 0.5), transparent 42%),
+        radial-gradient(circle at 80% 78%, rgba(130, 85, 225, 0.45), transparent 48%),
+        radial-gradient(1.4px 1.4px at 10% 20%, rgba(255, 255, 255, 0.9), transparent 60%),
+        radial-gradient(1px 1px at 70% 15%, rgba(255, 255, 255, 0.7), transparent 60%),
+        radial-gradient(1.6px 1.6px at 40% 65%, rgba(255, 255, 255, 0.8), transparent 60%),
+        radial-gradient(1px 1px at 85% 55%, rgba(255, 255, 255, 0.6), transparent 60%),
+        radial-gradient(1.4px 1.4px at 25% 85%, rgba(255, 255, 255, 0.7), transparent 60%),
+        linear-gradient(165deg, #05070f 0%, #0a0f1e 50%, #121729 100%);
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+/* ----------------------------------------------------------------------------
+ * .ice-card ― ユーザー提供のCSSをそのまま採用した「氷のカード」本体
+ * -------------------------------------------------------------------------- */
+.ice-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* heightは指定しない（="auto"のまま）のがポイント。
+       一覧画面側の親要素は display:flex; flex-wrap:wrap; で、
+       flexboxはデフォルトでalign-items:stretchが効くため、
+       各カードのheightがautoであれば「同じ行の中で一番背の高いカードに
+       揃えて自動で引き伸ばす」という動きをしてくれる。
+       ここでheight:100%のように具体的な値を指定してしまうと、
+       このstretch機能が働かなくなり、カードごとの高さがバラバラになる。 */
+    box-sizing: border-box;
+    padding: 24px 22px;
+    border-radius: 22px;
+    color: var(--ice-text);
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.35) 0%,
+        rgba(190, 235, 255, 0.15) 40%,
+        rgba(150, 210, 255, 0.08) 100%);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -10px 30px rgba(120, 200, 255, 0.25),
+        inset 0 0 40px rgba(255, 255, 255, 0.15),
+        0 20px 50px rgba(0, 20, 50, 0.5),
+        0 0 30px rgba(155, 231, 255, 0.25);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.ice-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 1),
+        inset 0 -10px 30px rgba(120, 200, 255, 0.35),
+        inset 0 0 40px rgba(255, 255, 255, 0.2),
+        0 30px 60px rgba(0, 20, 50, 0.6),
+        0 0 45px rgba(155, 231, 255, 0.45);
+}
+
+/* 角に付いた霜のハイライト */
+.ice-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.55), transparent 30%),
+        radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.4), transparent 28%);
+    mix-blend-mode: screen;
+}
+
+/* 3秒に1回、自動で流れる光の反射（ホバー不要） */
+.ice-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 40%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: rotate(20deg);
+    pointer-events: none;
+    /* 3sのサイクルのうち、最初の0.9s分だけ光が左から右へ流れ、
+       残りの時間(2.1s)は画面の右外で待機することで
+       「3秒に1回光る」ような点滅に見せている */
+    animation: ice-card-shine 3s ease-in-out infinite;
+    /* --ice-shine-delay: カードごとに光るタイミングをずらすためのCSS変数。
+       JSX側で style={{ "--ice-shine-delay": "0.6s" }} のように渡す想定。
+       渡されなかった場合は0s(ずらさない)がデフォルト値として使われる。 */
+    animation-delay: var(--ice-shine-delay, 0s);
+}
+
+@keyframes ice-card-shine {
+    0% { left: -60%; }
+    30% { left: 130%; }
+    100% { left: 130%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ice-card,
+    .ice-card::after,
+    .ice-button {
+        transition: none;
+        animation: none;
+    }
+}
+
+/* 本の表紙(サムネイル)を入れる枠。画像が無い本はグラデーションのプレース
+   ホルダーだけが表示される */
+.ice-cover {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #2f4f7a, #0f2238);
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+}
+
+.ice-cover img {
+    object-fit: cover;
+}
+
+.ice-card-title {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ice-card-author {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: var(--ice-text-muted);
+}
+
+.ice-card-meta {
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: rgba(242, 251, 255, 0.55);
+}
+
+/* ステータス表示用のバッジ（読みたい/読書中/読了）。色だけでなく
+   文字自体で区別しているのでアクセシビリティ的にも安全 */
+.ice-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ice-status-pill--want_to_read {
+    background: rgba(255, 196, 120, 0.22);
+    border: 1px solid rgba(255, 196, 120, 0.55);
+    color: #ffe9cf;
+}
+
+.ice-status-pill--reading {
+    background: rgba(140, 190, 255, 0.22);
+    border: 1px solid rgba(140, 190, 255, 0.55);
+    color: #e3f1ff;
+}
+
+.ice-status-pill--finished {
+    background: rgba(120, 220, 170, 0.22);
+    border: 1px solid rgba(120, 220, 170, 0.55);
+    color: #d8ffe9;
+}
+
+/* ----------------------------------------------------------------------------
+ * .ice-button ― スクリーンショットの「詳しく見る」ボタンを再現した
+ * 白〜ライトブルーのグラデーションのピル型ボタン。
+ * <Button>(shadcn/ui)は使わず、素の<button>/<a>にこのクラスを当てて使う。
+ * -------------------------------------------------------------------------- */
+.ice-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    box-shadow:
+        0 10px 24px rgba(90, 170, 230, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ice-button:hover {
+    color: #0c2742;
+    text-decoration: none;
+    transform: translateY(-3px);
+    box-shadow:
+        0 14px 30px rgba(90, 170, 230, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+.ice-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 危険な操作(削除)用のバリエーション。色味を赤系に寄せている */
+.ice-button--danger {
+    background: linear-gradient(160deg, #ffffff 0%, #ffd7d2 100%);
+    color: #5c1c12;
+    box-shadow:
+        0 10px 24px rgba(230, 110, 90, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.ice-button--danger:hover {
+    box-shadow:
+        0 14px 30px rgba(230, 110, 90, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+/* ヘッダーなど、小さめに表示したい場所用 */
+.ice-button--sm {
+    padding: 7px 18px;
+    font-size: 13px;
+}
+
+/* ----------------------------------------------------------------------------
+ * フォーム部品 (入力欄・セレクト・テキストエリア)
+ * -------------------------------------------------------------------------- */
+.ice-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ice-field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ice-text-muted);
+}
+
+.ice-input,
+.ice-select,
+.ice-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--ice-text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+}
+
+.ice-input {
+    border-radius: 999px;
+}
+
+/* <select>のドロップダウンを開いた時の選択肢リストは背景が白になる
+   ブラウザが多いため、選択肢の文字色だけは濃い色にして読めるようにする */
+.ice-select option {
+    color: #0c2742;
+}
+
+.ice-textarea {
+    min-height: 96px;
+    resize: vertical;
+}
+
+.ice-input::placeholder,
+.ice-textarea::placeholder {
+    color: rgba(242, 251, 255, 0.5);
+}
+
+.ice-input:focus,
+.ice-select:focus,
+.ice-textarea:focus {
+    border-color: rgba(191, 234, 255, 0.9);
+    box-shadow: 0 0 0 3px rgba(120, 200, 255, 0.25);
+}
+
+/* ジャンル選択のチェックボックスを、チップ(小さいピル)のラベルで囲う */
+.ice-genre-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 13px;
+    color: var(--ice-text);
+    cursor: pointer;
+}
+
+.ice-genre-chip input {
+    accent-color: #5fb3e0;
+}
+
+/* ----------------------------------------------------------------------------
+ * ヘッダー(ナビゲーションバー)用。すりガラスの細いバーをページ上部に固定する
+ * -------------------------------------------------------------------------- */
+.ice-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 40px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ice-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ice-text);
+    text-decoration: none;
+}
+
+.ice-logo:hover {
+    color: var(--ice-text);
+    text-decoration: none;
+}
+
+.ice-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ice-user-name {
+    font-size: 14px;
+    color: var(--ice-text-muted);
+    /* 長いユーザー名が画面幅を押し広げないよう、はみ出す部分は"..."で省略する */
+    max-width: 140px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ice-avatar {
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ----------------------------------------------------------------------------
+ * スマホ幅(640px以下)向けの調整
+ * -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .ice-header {
+        /* PC用の左右40pxの余白はスマホだと窮屈なので狭くする */
+        padding: 12px 16px;
+    }
+
+    .ice-logo {
+        font-size: 18px;
+    }
+
+    /* カードの中身(表紙・タイトル等)はそのままに、余白だけ少し詰める */
+    .ice-card {
+        padding: 18px 16px;
+    }
+
+    .ice-cover {
+        height: 160px;
+    }
+}

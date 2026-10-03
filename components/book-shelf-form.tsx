@@ -9,8 +9,6 @@
 // 「追加か編集か」を知らなくてよいようにしている。
 // ============================================================================
 
-import { Button } from "@/components/ui/button";
-
 type Genre = {
     id: number;
     name: string;
@@ -41,21 +39,25 @@ export function BookShelfForm({
     submitLabel,
 }: BookShelfFormProps) {
     return (
-        <form action={action}>
-            <p>{bookTitle}</p>
+        // フォーム全体を.ice-cardに乗せて、他の画面のカードと同じ
+        // すりガラスの見た目に揃えている
+        <form action={action} className="ice-card gap-5">
+            <p className="ice-card-title text-lg">{bookTitle}</p>
 
-            <div className="set-status-area">
-                <select name="status" defaultValue={initialStatus}>
+            <div className="ice-field">
+                <label htmlFor="status" className="ice-field-label">ステータス</label>
+                <select id="status" name="status" defaultValue={initialStatus} className="ice-select">
                     <option value="want_to_read">読みたい</option>
                     <option value="reading">読書中</option>
                     <option value="finished">読了</option>
                 </select>
             </div>
 
-            <div className="set-rating-area">
+            <div className="ice-field">
+                <label htmlFor="rating" className="ice-field-label">評価</label>
                 {/* ratingはnumber|null|undefinedなので、文字列に変換して
                     defaultValueに渡す（未評価の場合は空文字=""になる） */}
-                <select name="rating" defaultValue={initialRating?.toString() ?? ""}>
+                <select id="rating" name="rating" defaultValue={initialRating?.toString() ?? ""} className="ice-select">
                     <option value="">評価なし</option>
                     <option value="1">★1</option>
                     <option value="2">★2</option>
@@ -65,30 +67,36 @@ export function BookShelfForm({
                 </select>
             </div>
 
-            <div className="set-review-area">
+            <div className="ice-field">
+                <label htmlFor="review" className="ice-field-label">感想</label>
                 <textarea
+                    id="review"
                     name="review"
                     placeholder="感想を書く（任意）"
                     defaultValue={initialReview ?? ""}
+                    className="ice-textarea"
                 />
             </div>
 
-            <div className="set-genres-area">
-                {allGenres.map((genre) => (
-                    <label key={genre.id}>
-                        <input
-                            type="checkbox"
-                            name="genreIds"
-                            value={genre.id}
-                            // 編集時、既に選ばれているジャンルにチェックを入れておく
-                            defaultChecked={initialGenreIds.includes(genre.id)}
-                        />
-                        {genre.name}
-                    </label>
-                ))}
+            <div className="ice-field">
+                <span className="ice-field-label">ジャンル</span>
+                <div className="flex flex-wrap gap-2">
+                    {allGenres.map((genre) => (
+                        <label key={genre.id} className="ice-genre-chip">
+                            <input
+                                type="checkbox"
+                                name="genreIds"
+                                value={genre.id}
+                                // 編集時、既に選ばれているジャンルにチェックを入れておく
+                                defaultChecked={initialGenreIds.includes(genre.id)}
+                            />
+                            {genre.name}
+                        </label>
+                    ))}
+                </div>
             </div>
 
-            <Button type="submit">{submitLabel}</Button>
+            <button type="submit" className="ice-button self-start">{submitLabel}</button>
         </form>
     );
 }

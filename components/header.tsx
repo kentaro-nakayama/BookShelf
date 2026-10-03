@@ -1,37 +1,42 @@
 import { auth, signOut, signIn } from "@/auth";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+// このヘッダーはshadcn/uiの<Button>ではなく、globals.cssで定義した
+// .ice-button（すりガラス風のピルボタン）を直接当てたネイティブの<button>を使う。
+// 理由: <Button>はTailwindのユーティリティクラス(bg-primary等)で見た目を
+// 作っており、氷UI用CSSと混ぜると「どちらが勝つか」が分かりにくくなるため。
 
 export default async function Header() {
     const session = await auth();
     // ログインしている場合
     if (session) {
         return (
-            <header>
+            <header className="ice-header">
                 <h1>
-                    <Link href={"/"}>Bookshelf</Link>
+                    <Link href={"/"} className="ice-logo">
+                        BookShelf
+                    </Link>
                 </h1>
-                <div className="user-info">
+                <div className="ice-user">
                     {session.user?.image && (
                         <Image
                             src={session.user.image}
                             alt={session.user?.name ?? ""}
-                            width={48}
-                            height={48}
-                            className="rounded-full"
+                            width={36}
+                            height={36}
+                            className="ice-avatar"
                         />
                     )}
-                    <p>{session.user?.name}</p>
-                </div>
-                <div className="logout">
+                    <p className="ice-user-name">{session.user?.name}</p>
                     <form
                         action={async () => {
                             "use server";
                             await signOut();
                         }}
                     >
-                        <Button type="submit">ログアウト</Button>
+                        <button type="submit" className="ice-button ice-button--sm">
+                            ログアウト
+                        </button>
                     </form>
                 </div>
             </header>
@@ -39,20 +44,22 @@ export default async function Header() {
     }
 
     return (
-        <header>
+        <header className="ice-header">
             <h1>
-                <Link href={"/"}>Bookshelf</Link>
+                <Link href={"/"} className="ice-logo">
+                    BookShelf
+                </Link>
             </h1>
-            <div className="login">
-                <form
-                    action={async () => {
-                        "use server";
-                        await signIn("google");
-                    }}
-                >
-                    <Button type="submit">ログイン</Button>
-                </form>
-            </div>
+            <form
+                action={async () => {
+                    "use server";
+                    await signIn("google");
+                }}
+            >
+                <button type="submit" className="ice-button ice-button--sm">
+                    ログイン
+                </button>
+            </form>
         </header>
     );
 }
