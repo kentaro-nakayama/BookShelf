@@ -1358,7 +1358,7 @@ a.ice-status-pill:hover {
         rgba(217, 241, 255, 0.75));
     border-radius: 1px 6px 6px 1px;
     box-shadow: 0 2px 8px rgba(0, 20, 50, 0.35);
-    animation: ice-page-flip 2.4s infinite ease-in-out;
+    animation: ice-page-flip 1.4s infinite ease-in-out;
     /* 1枚ごとの開始のずれは book-loader.tsx 側から
        style={{ animationDelay }} で渡している */
 }
