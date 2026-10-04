@@ -101,10 +101,17 @@ export default function BookCard({
         <Link
             href={href}
             className="ice-card ice-card--book w-full lg:w-[calc(50%-10px)]"
-            // カードごとに光るタイミングをずらす(0s, 1s, 2s, ... を6枚ごとに繰り返す)。
-            // 1周が6秒(globals.cssのice-card-shine)なので、6枚で1秒ずつずらすと
-            // サイクル全体に均等に散らばる。
-            style={{ "--ice-shine-delay": `${(index % 6) * 1}s` } as CSSProperties}
+            // カードごとに光るタイミングをずらす(0s, 0.5s, 1s, ... )。
+            // 0.5s … 上のカードが光ってから次のカードが光り始めるまでの間隔。
+            //        小さくするほど光が上から下へ速く流れる。
+            // % 12 … 何枚で一巡して同じタイミングに戻るか。
+            //
+            // この2つは独立に決められない。1周の長さ(globals.cssのice-card-shineで
+            // 6秒)を間隔で割った数にする必要がある(6 ÷ 0.5 = 12)。
+            // 例えば12より小さくすると、一巡したあと次の周回が始まるまでに
+            // 光らない時間ができてしまい、さらに「13枚目が1枚目と同時に光る」
+            // といったズレも起きる。
+            style={{ "--ice-shine-delay": `${(index % 12) * 0.5}s` } as CSSProperties}
         >
             {/* --- 左: 表紙 ---------------------------------------------- */}
             <div className="ice-book-cover">
