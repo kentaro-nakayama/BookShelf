@@ -18,7 +18,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { userBooks, userBookGenres, genres } from "@/db/schema";
+import { userBooks, userBookGenres } from "@/db/schema";
 // and:      複数の条件を「かつ」でつなぐ（WHERE A AND B）
 // eq:       等しい（WHERE col = value）
 // desc:     降順の並び替え（ORDER BY col DESC）
@@ -137,17 +137,15 @@ export default async function BooksPage({ searchParams }: PageProps<"/books">) {
     }
 
     // --- データ取得 ---------------------------------------------------------
-    // 本の一覧と、ジャンル絞り込み用の選択肢(genresマスタ)を取得する。
-    // この2つは互いに結果を必要としないので、Promise.allで同時に実行して
-    // 待ち時間を短くしている（順番に待つと2回分の時間がかかる）。
-    const [myBooks, allGenres] = await Promise.all([
-        db.query.userBooks.findMany({
-            where: and(...conditions),
-            with: { book: true },
-            orderBy: [desc(userBooks.createdAt)],
-        }),
-        db.select().from(genres).orderBy(genres.id),
-    ]);
+    // 以前はここでジャンルの選択肢(genresマスタ)も取得していたが、
+    // 画面からジャンル・評価の絞り込みフォームを外したため不要になった。
+    // ?genre=3 のようにURLで直接指定した場合の絞り込みは、上のconditionsで
+    // 引き続き効く（選択肢を画面に出さなくなっただけ）。
+    const myBooks = await db.query.userBooks.findMany({
+        where: and(...conditions),
+        with: { book: true },
+        orderBy: [desc(userBooks.createdAt)],
+    });
 
     // 絞り込みが1つでも掛かっているか。
     // 「0件です」と出すときに、「まだ1冊も登録していない」のか

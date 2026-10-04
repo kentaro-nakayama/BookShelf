@@ -27,7 +27,7 @@ import { usePathname } from "next/navigation";
 // ----------------------------------------------------------------------------
 // アイコン（インラインSVG）
 // ----------------------------------------------------------------------------
-// アイコン用のライブラリは入れず、必要な4つだけ自分でSVGを書いている。
+// 本棚タブ以外はライブラリを使わず、必要なSVGを自分で書いている。
 // stroke="currentColor" にしておくと、CSS側の color の指定がそのまま
 // 線の色になる。これで「選択中のタブだけ明るくする」といった色の制御を
 // CSSだけで完結できる（SVG側に色を書かなくて済む）。
@@ -55,13 +55,25 @@ function HomeIcon() {
     );
 }
 
-function ListIcon() {
-    // 本が並んだ本棚のイメージ
+// 本棚タブだけアイコンライブラリ(lucide-react)のものを使っている。
+// そのまま <Book /> と書くと既定の24pxで描かれ、自作アイコン(22px)より
+// 一回り大きくなってタブの並びが不揃いになるため、
+// 他と同じサイズ・線の太さを指定して包んでいる。
+function BookIcon() {
+    return <Book size={22} strokeWidth={1.6} aria-hidden />;
+}
+
+function BookmarkListIcon() {
+    // 「本棚」は本が並んだ棚、「マイリスト」は箇条書きのリスト、という
+    // 見た目の違いで区別する（同じアイコンだとどちらのタブか分からないため）
     return (
         <svg {...iconProps}>
-            <path d="M4 4h3.5v16H4z" />
-            <path d="M9.5 4H13v16H9.5z" />
-            <path d="M15.4 4.6l3.4.9-3.7 14.1-3.4-.9z" />
+            <path d="M9 6h11" />
+            <path d="M9 12h11" />
+            <path d="M9 18h11" />
+            <path d="M4.5 6h.01" />
+            <path d="M4.5 12h.01" />
+            <path d="M4.5 18h.01" />
         </svg>
     );
 }
@@ -107,7 +119,7 @@ const NAV_ITEMS = [
     {
         href: "/books",
         label: "本棚",
-        Icon: Book,
+        Icon: BookIcon,
         emphasis: false,
         // /books 自体と、本の詳細ページ(/books/<id>)で光らせる。
         // 「探す」側の画面(/books/search, /books/add)は除外する。
@@ -129,7 +141,7 @@ const NAV_ITEMS = [
     {
         href: "/list",
         label: "マイリスト",
-        Icon: ListIcon,
+        Icon: BookmarkListIcon,
         emphasis: false,
         isActive: (pathname: string) => pathname.startsWith("/list"),
     },
