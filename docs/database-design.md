@@ -14,6 +14,9 @@ erDiagram
     books ||--o{ user_books : "registered as"
     user_books ||--o{ user_book_genres : "tagged with"
     genres ||--o{ user_book_genres : "used in"
+    users ||--o{ book_lists : "creates"
+    book_lists ||--o{ book_list_items : "contains"
+    user_books ||--o{ book_list_items : "listed in"
 
     users {
         uuid id PK
@@ -59,6 +62,19 @@ erDiagram
     user_book_genres {
         uuid user_book_id FK
         smallint genre_id FK
+    }
+    book_lists {
+        uuid id PK
+        uuid user_id FK
+        text name
+        text description
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    book_list_items {
+        uuid book_list_id FK
+        uuid user_book_id FK
+        timestamptz added_at
     }
 ```
 
@@ -177,6 +193,42 @@ OAuthプロバイダ（Google）との連携情報を保持する。
 - 外部キー: `user_book_id REFERENCES user_books(id) ON DELETE CASCADE`
 - 外部キー: `genre_id REFERENCES genres(id) ON DELETE RESTRICT`
 
+### 2.8 book_lists（アプリ独自テーブル）
+
+ユーザーが自分で作る自由なリスト（例:「2026年に読んだ本」「後輩におすすめしたい技術書」）。
+`genres` が開発者管理の固定マスタで全ユーザー共通なのに対し、`book_lists` はユーザーごとに作成するため `user_id` を持つ。
+
+| カラム名 | 型 | NULL | デフォルト | 説明 |
+|---|---|---|---|---|
+| id | uuid | NOT NULL | gen_random_uuid() | 主キー |
+| user_id | uuid | NOT NULL | - | users.id への外部キー |
+| name | text | NOT NULL | - | リスト名（アプリ側で50文字まで） |
+| description | text | NULL | - | 説明（アプリ側で200文字まで） |
+| created_at | timestamptz | NOT NULL | now() | 作成日時 |
+| updated_at | timestamptz | NOT NULL | now() | 更新日時 |
+
+- 制約: `UNIQUE (user_id, name)`（同一ユーザーが同じ名前のリストを二重作成するのを防止。ユーザーをまたげば同名でよいので複合にしている）
+- 外部キー: `user_id REFERENCES users(id) ON DELETE CASCADE`
+
+### 2.9 book_list_items（アプリ独自テーブル・中間テーブル）
+
+リストに入っている本を表す多対多の中間テーブル。1冊の本は複数のリストに入れられる。
+
+| カラム名 | 型 | NULL | デフォルト | 説明 |
+|---|---|---|---|---|
+| book_list_id | uuid | NOT NULL | - | book_lists.id への外部キー |
+| user_book_id | uuid | NOT NULL | - | user_books.id への外部キー |
+| added_at | timestamptz | NOT NULL | now() | リストに追加した日時 |
+
+- 主キー: `PRIMARY KEY (book_list_id, user_book_id)`（同じ本を同じリストに重複追加できない）
+- 外部キー: `book_list_id REFERENCES book_lists(id) ON DELETE CASCADE`（リストを削除すれば紐付けも消える）
+- 外部キー: `user_book_id REFERENCES user_books(id) ON DELETE CASCADE`（本棚から本を削除すれば各リストからも自動で外れる）
+- 設計メモ: `books`（本そのもの）ではなく `user_books`（自分の本棚への登録行）を参照している。これにより
+  (1) 誰のリストに誰の本が入るかという所有関係が自然に一致し、
+  (2) リスト画面でもステータス・評価・感想をそのまま表示できる。
+  `user_book_genres` と同じ考え方。リストに入れられるのは本棚に登録済みの本のみとなる。
+- 並び順: リスト内の本は `added_at` の昇順（追加した順）で表示する。手動の並び替えは現時点では持たない（必要になれば `position` 列を追加する）。
+
 ## 3. インデックス設計
 
 | テーブル | インデックス | 目的 |
@@ -185,6 +237,9 @@ OAuthプロバイダ（Google）との連携情報を保持する。
 | user_books | `idx_user_books_user_id_status (user_id, status)` | ステータス別フィルタの高速化 |
 | user_book_genres | `idx_user_book_genres_genre_id (genre_id)` | ジャンル別フィルタの高速化 |
 | books | `idx_books_external (external_source, external_id)` | UNIQUE制約と兼用、重複チェック高速化 |
+| book_lists | `book_lists_user_id_index (user_id)` | 自分のリスト一覧の絞り込み高速化 |
+| book_lists | `book_lists_user_id_name_unique (user_id, name)` | UNIQUE制約と兼用、同名チェック高速化 |
+| book_list_items | `book_list_items_user_book_id_index (user_book_id)` | 「この本が入っているリスト」の逆引き（本の詳細画面のチェック状態）高速化 |
 | accounts | `idx_accounts_provider (provider, provider_account_id)` | UNIQUE制約と兼用、Auth.jsログイン時の検索高速化 |
 | sessions | `idx_sessions_token (session_token)` | UNIQUE制約と兼用、セッション検証の高速化 |
 
@@ -195,6 +250,14 @@ OAuthプロバイダ（Google）との連携情報を保持する。
 - **books** は外部APIのレスポンスをキャッシュする目的のテーブル。同じ本を複数ユーザーが登録しても `books` テーブルには1件のみ保持し、ユーザーごとの情報（ステータス・評価・感想・ジャンル）は `user_books` / `user_book_genres` 側に持たせる正規化設計。
 - 主キーは `genres`（固定マスタ、件数少）を除き全て `UUID`（`gen_random_uuid()`）を採用し、Auth.jsの標準スキーマと一貫性を持たせる。
 - `user_books.book_id` の削除制約は `ON DELETE RESTRICT` とし、本棚に登録されている本がうっかり削除されることを防ぐ（本の削除機能自体は現時点で要件に含まれない）。
+- **マイリスト（book_lists / book_list_items）** は、`genres` のような固定分類とは別に、ユーザーが自由にテーマを決めて本をまとめるための機能。ジャンルが「この本は何の本か」という属性なのに対し、リストは「どういう切り口で並べたいか」というユーザー都合のまとまりを表す。両者は併用でき、どちらも1冊に複数設定できる。
+- マイリストの操作は、リストの作成・削除を `/list` 側で、本の出し入れを本の詳細画面（ジャンル選択と同じフォーム）で行う。`updateBook` は送られてきたリストidを、必ず「自分が所有するリスト」に絞り込み直してから登録する（チェックボックスの値はブラウザ側で書き換えられるため）。
+
+### 4.1 マイグレーション運用上の注意（2026-10-04 時点）
+
+- `drizzle/0001_ancient_chameleon.sql` は**未適用のまま**になっている。内容は `sessions` テーブルの主キーを `id` から `session_token` へ移し、`id` 列を削除するもの。本番DBの `sessions` には現在も `id` 列と `sessions_pkey (id)` が残っており、この状態で0001を流すと `ADD PRIMARY KEY` が「主キーが既に存在する」で失敗する。そのため `drizzle-kit migrate` は0001で止まり、以降のマイグレーションも適用されない状態だった。
+- `0002`（マイリストのテーブル追加）は、drizzle の migrator と同じ手順（SQLファイル全体のsha256をハッシュとし、`--> statement-breakpoint` で分割実行、`drizzle.__drizzle_migrations` に記録）で**0002のみを個別に適用済み**。
+- 0001をどう扱うかは未決定。`sessions.id` の削除は稼働中のDBに対する破壊的操作のため、対応方針を決めてから実施する。
 
 ## 5. 実装ファイルの対応
 

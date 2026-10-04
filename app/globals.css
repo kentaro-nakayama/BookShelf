@@ -1177,3 +1177,91 @@ a.ice-status-pill:hover {
     /* ラベルが2行に折り返してカードの高さ配分が崩れないようにする */
     white-space: nowrap;
 }
+
+/* ============================================================================
+ * マイリスト機能 (app/list/)
+ * ========================================================================= */
+
+/* ----------------------------------------------------------------------------
+ * .ice-list-card ― リスト一覧の1行（カード全体がリンク）
+ * -------------------------------------------------------------------------- */
+/* 本棚カード(.ice-card--book)と違い、表紙画像を持たない横長の帯。
+   .ice-card のガラスの質感はそのまま使い、余白と向きだけ調整する。 */
+.ice-list-card {
+    gap: 6px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--ice-text);
+}
+
+.ice-list-card:hover {
+    text-decoration: none;
+    color: var(--ice-text);
+}
+
+/* 「3冊」の部分。タイトルが長くても冊数が潰れないようにする */
+.ice-list-count {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ice-text-muted);
+    white-space: nowrap;
+}
+
+/* リスト名が長い場合は2行で打ち切る。
+   .ice-card--book のタイトルと同じ考え方で、white-space: nowrap は
+   使わない（横スクロールの原因になるため）。 */
+.ice-list-card .ice-card-title {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+
+.ice-list-card .ice-card-author {
+    margin: 0;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+/* ----------------------------------------------------------------------------
+ * .ice-form-error ― フォームのエラーメッセージ
+ * -------------------------------------------------------------------------- */
+/* 色だけでなく文章で理由を伝えているので、色が見分けにくい人にも伝わる */
+.ice-form-error {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    background: rgba(255, 150, 140, 0.18);
+    border: 1px solid rgba(255, 150, 140, 0.55);
+    color: #ffe2de;
+}
+
+/* ----------------------------------------------------------------------------
+ * .ice-back-link ― 「← マイリスト」のような戻り導線
+ * -------------------------------------------------------------------------- */
+.ice-back-link {
+    align-self: flex-start;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ice-text-muted);
+    text-decoration: none;
+    /* 要件定義書8章の「タップ対象は44px以上」。
+       文字だけだと指で押しにくいので、上下の余白で高さを稼ぐ。 */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.ice-back-link:hover {
+    color: var(--ice-text);
+    text-decoration: underline;
+}

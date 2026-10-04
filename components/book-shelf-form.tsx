@@ -14,6 +14,11 @@ type Genre = {
     name: string;
 };
 
+type BookList = {
+    id: string;
+    name: string;
+};
+
 type BookShelfFormProps = {
     bookTitle: string;
     allGenres: Genre[];
@@ -22,6 +27,12 @@ type BookShelfFormProps = {
     initialRating?: number | null;
     initialReview?: string | null;
     initialGenreIds?: number[];
+    // マイリスト関連。
+    // allLists を渡さない（undefined）とリスト欄ごと表示されない。
+    // 追加画面(/books/add)では user_books の行がまだ存在せず、
+    // リストに入れることができないため、あちらからは渡さない。
+    allLists?: BookList[];
+    initialListIds?: string[];
     // すでに .bind() 等で必要な引数を固定済みのServer Action。
     // 呼び出し側(add/page.tsx や [id]/page.tsx)が用意する。
     action: (formData: FormData) => void | Promise<void>;
@@ -35,6 +46,8 @@ export function BookShelfForm({
     initialRating,
     initialReview,
     initialGenreIds = [],
+    allLists,
+    initialListIds = [],
     action,
     submitLabel,
 }: BookShelfFormProps) {
@@ -95,6 +108,37 @@ export function BookShelfForm({
                     ))}
                 </div>
             </div>
+
+            {/* マイリスト欄。allListsが渡されたときだけ表示する。
+                ジャンルと同じチェックボックス方式にして、操作を揃えている。
+                違いは、ジャンルが開発者管理の固定マスタなのに対し、
+                リストはユーザーが自分で作るものだという点。 */}
+            {allLists && (
+                <div className="ice-field">
+                    <span className="ice-field-label">リスト</span>
+                    {allLists.length === 0 ? (
+                        <p className="text-sm text-[color:var(--ice-text-muted)]">
+                            リストがまだありません。マイリスト画面で作成すると、
+                            ここから本を入れられるようになります。
+                        </p>
+                    ) : (
+                        <div className="flex flex-wrap gap-2">
+                            {allLists.map((list) => (
+                                <label key={list.id} className="ice-genre-chip">
+                                    <input
+                                        type="checkbox"
+                                        name="listIds"
+                                        value={list.id}
+                                        // すでにこの本が入っているリストにチェックを入れておく
+                                        defaultChecked={initialListIds.includes(list.id)}
+                                    />
+                                    {list.name}
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             <button type="submit" className="ice-button self-start">{submitLabel}</button>
         </form>

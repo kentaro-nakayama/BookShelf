@@ -19,8 +19,8 @@
 // ----------------------------------------------------------------------------
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { userBooks, userBookGenres, genres } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { userBooks, userBookGenres, genres, bookLists, bookListItems } from "@/db/schema";
+import { eq, and, asc } from "drizzle-orm";
 import { updateBook, removeFromShelf } from "./actions";
 import { BookShelfForm } from "@/components/book-shelf-form";
 
@@ -47,6 +47,24 @@ export default async function BookDetailPage({params}: PageProps<"/books/[id]">)
 
     const allGenres = await db.select().from(genres);
 
+    // --- マイリスト関連 -----------------------------------------------------
+    // この本をどのリストに入れるか選べるようにするため、次の2つを取得する。
+    //   allLists      … 自分が作ったリスト全部（チェックボックスの選択肢）
+    //   currentListIds… この本が今入っているリストのid（初期チェック状態）
+    // 互いに結果を必要としないので Promise.all で同時に実行する。
+    const [allLists, currentListLinks] = await Promise.all([
+        db
+            .select({ id: bookLists.id, name: bookLists.name })
+            .from(bookLists)
+            .where(eq(bookLists.userId, session.user.id))
+            .orderBy(asc(bookLists.createdAt)),
+        db
+            .select({ bookListId: bookListItems.bookListId })
+            .from(bookListItems)
+            .where(eq(bookListItems.userBookId, id)),
+    ]);
+    const currentListIds = currentListLinks.map((link) => link.bookListId);
+
     return (
         <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-6 sm:px-12">
             <h2 className="text-2xl font-bold">本を更新</h2>
@@ -57,6 +75,8 @@ export default async function BookDetailPage({params}: PageProps<"/books/[id]">)
                 initialRating={userBook.rating}
                 initialReview={userBook.reviewText}
                 initialGenreIds={currentGenreIds}
+                allLists={allLists}
+                initialListIds={currentListIds}
                 action={updateBook.bind(null, userBook.id)}
                 submitLabel="更新する"
             />

@@ -15,6 +15,13 @@
       "when": 1790941815233,
       "tag": "0001_ancient_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791117997584,
+      "tag": "0002_modern_winter_soldier",
+      "breakpoints": true
     }
   ]
 }

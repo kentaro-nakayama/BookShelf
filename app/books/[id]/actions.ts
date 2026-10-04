@@ -7,11 +7,11 @@
 
 "use server";
 
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { userBooks, userBookGenres } from "@/db/schema";
+import { userBooks, userBookGenres, bookLists, bookListItems } from "@/db/schema";
 
 const VALID_STATUSES = ["want_to_read", "reading", "finished"] as const;
 type Status = (typeof VALID_STATUSES)[number];
@@ -57,6 +57,11 @@ export async function updateBook(userBookId: string, formData: FormData) {
 
     const genreIds = formData.getAll("genreIds").map((id) => Number(id));
 
+    // チェックされたリストのid。チェックが1つも無ければ空配列になる。
+    const listIds = formData
+        .getAll("listIds")
+        .filter((value): value is string => typeof value === "string");
+
     await db
         .update(userBooks)
         .set({
@@ -80,6 +85,38 @@ export async function updateBook(userBookId: string, formData: FormData) {
         await db.insert(userBookGenres).values(
             genreIds.map((genreId) => ({ userBookId, genreId })),
         );
+    }
+
+    // --- マイリストへの所属を更新 -------------------------------------------
+    // ジャンルと同じく「一旦全部消してから入れ直す」方式。
+    await db
+        .delete(bookListItems)
+        .where(eq(bookListItems.userBookId, userBookId));
+
+    if (listIds.length > 0) {
+        // 認可チェック: 送られてきたリストidが本当に自分のリストかを確認する。
+        // チェックボックスの値はブラウザの開発者ツールで書き換えられるため、
+        // 受け取った値をそのまま信用して挿入すると、他人のリストに
+        // 自分の本を紛れ込ませることができてしまう。
+        // 「自分のリスト」に絞って引き直し、ヒットしたidだけを使う。
+        const ownedLists = await db
+            .select({ id: bookLists.id })
+            .from(bookLists)
+            .where(
+                and(
+                    eq(bookLists.userId, session.user.id),
+                    inArray(bookLists.id, listIds),
+                ),
+            );
+
+        if (ownedLists.length > 0) {
+            await db.insert(bookListItems).values(
+                ownedLists.map((list) => ({
+                    bookListId: list.id,
+                    userBookId,
+                })),
+            );
+        }
     }
 
     redirect("/");

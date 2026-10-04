@@ -160,3 +160,65 @@ export const userBooksRelations = relations(userBooks, ({ one }) => ({
         references: [books.id],
     }),
 }));
+// ----------------------------------------------------------------------------
+// book_lists / book_list_items（マイリスト機能）
+// ----------------------------------------------------------------------------
+// ユーザーが自分で作る自由なリスト（例:「2026年に読んだ本」「技術書おすすめ」）。
+// 設計の考え方は docs/database-design.md の2.8/2.9を参照。
+//
+// genresとの違い:
+//   genres は開発者が管理する固定マスタで全ユーザー共通。
+//   book_lists はユーザーごとに自由に作れるので user_id を持つ。
+
+// book_lists: リストそのもの
+export const bookLists = pgTable('book_lists', {
+    id: uuid('id').notNull().defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: text('name').notNull(),
+    description: text('description'), // 説明は任意なのでNULL許可
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+    // 同じユーザーが同じ名前のリストを二重に作るのを防ぐ。
+    // ユーザーをまたげば同じ名前でよいので、user_idとの複合にしている。
+    uniqueIndex('book_lists_user_id_name_unique').on(table.userId, table.name),
+    // 「自分のリスト一覧」を引くときの絞り込みを速くする
+    index('book_lists_user_id_index').on(table.userId),
+]);
+
+// book_list_items: リストに入っている本（多対多の中間テーブル）
+//
+// user_books を参照している点がポイント。books（本そのもの）ではなく
+// 「自分の本棚に登録した行」を指すことで、
+//   - 誰のリストに誰の本が入るか、という所有関係が自然に一致する
+//   - リスト画面でもステータス・評価・感想をそのまま表示できる
+// という利点がある（user_book_genres と同じ考え方）。
+export const bookListItems = pgTable('book_list_items', {
+    bookListId: uuid('book_list_id').notNull().references(() => bookLists.id, { onDelete: "cascade" }),
+    userBookId: uuid('user_book_id').notNull().references(() => userBooks.id, { onDelete: "cascade" }),
+    addedAt: timestamp('added_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+    // 同じ本を同じリストに2回入れられないようにする複合主キー
+    primaryKey({ columns: [table.bookListId, table.userBookId] }),
+    // 「この本が入っているリスト」を逆引きするとき用
+    // （本の詳細画面でチェック済みのリストを調べるのに使う）
+    index('book_list_items_user_book_id_index').on(table.userBookId),
+]);
+
+// リレーション定義: db.query.〜 で関連テーブルを一緒に取得できるようにする
+export const bookListsRelations = relations(bookLists, ({ many }) => ({
+    // 1つのリストは複数のitemを持つ（1対多）
+    items: many(bookListItems),
+}));
+
+export const bookListItemsRelations = relations(bookListItems, ({ one }) => ({
+    // itemから見ると、所属リストも、指している本棚登録も1対1
+    list: one(bookLists, {
+        fields: [bookListItems.bookListId],
+        references: [bookLists.id],
+    }),
+    userBook: one(userBooks, {
+        fields: [bookListItems.userBookId],
+        references: [userBooks.id],
+    }),
+}));
