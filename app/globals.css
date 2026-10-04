@@ -198,7 +198,7 @@ body {
        このstretch機能が働かなくなり、カードごとの高さがバラバラになる。 */
     box-sizing: border-box;
     padding: 24px 22px;
-    border-radius: 22px;
+    border-radius: 16px;
     color: var(--ice-text);
     background: linear-gradient(135deg,
         rgba(255, 255, 255, 0.35) 0%,
@@ -249,10 +249,13 @@ body {
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
     transform: rotate(20deg);
     pointer-events: none;
-    /* 3sのサイクルのうち、最初の0.9s分だけ光が左から右へ流れ、
-       残りの時間(2.1s)は画面の右外で待機することで
-       「3秒に1回光る」ような点滅に見せている */
-    animation: ice-card-shine 3s ease-in-out infinite;
+    /* 6sのサイクルのうち、最初の1.5s分だけ光が左から右へ流れ、
+       残りの時間(4.5s)は画面の右外で待機することで
+       「6秒に1回光る」ような点滅に見せている。
+       数値の意味:
+         この6sを大きくすると「光る間隔」が空き、
+         下の@keyframesの25%を大きくすると「光が流れる速さ」が遅くなる。 */
+    animation: ice-card-shine 6s ease-in-out infinite;
     /* --ice-shine-delay: カードごとに光るタイミングをずらすためのCSS変数。
        JSX側で style={{ "--ice-shine-delay": "0.6s" }} のように渡す想定。
        渡されなかった場合は0s(ずらさない)がデフォルト値として使われる。 */
@@ -260,8 +263,10 @@ body {
 }
 
 @keyframes ice-card-shine {
+    /* 0%〜25%(=6sのうち1.5s)をかけて、カードの左外から右外へ帯を動かす。
+       残りの25%〜100%(=4.5s)は右外に置いたままにして次の周回を待つ。 */
     0% { left: -60%; }
-    30% { left: 130%; }
+    25% { left: 130%; }
     100% { left: 130%; }
 }
 
