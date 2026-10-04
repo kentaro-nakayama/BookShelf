@@ -435,7 +435,17 @@ body {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: var(--ice-text);
-    font-size: 14px;
+    /* 16px未満にしないこと。
+       iOS Safariは、フォントサイズが16px未満の入力欄をタップすると
+       「文字が小さくて読めないだろう」と判断して画面を自動的に拡大する。
+       拡大された状態は指で戻すまで解除されず、入力のたびにレイアウトが
+       ずれて非常に使いにくい（要件定義書8章の「入力時の自動ズーム」への配慮）。
+       16px以上にしておけばこの挙動は起きない。
+       user-scalable=no や maximum-scale=1 を指定しても止められるが、
+       それは「拡大したい人が拡大できなくなる」ためアクセシビリティ上
+       避けるべきで、フォントサイズ側で対応するのが正しい解決方法。
+       この指定は .ice-input / .ice-select / .ice-textarea の3つすべてに効く。 */
+    font-size: 16px;
     font-family: inherit;
     outline: none;
 }
