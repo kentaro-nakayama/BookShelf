@@ -1275,3 +1275,147 @@ a.ice-status-pill:hover {
     color: var(--ice-text);
     text-decoration: underline;
 }
+
+/* ============================================================================
+ * ローディング表示 (components/book-loader.tsx)
+ * ----------------------------------------------------------------------------
+ * 開いた本のページが右から左へめくれ続けるアニメーション。
+ *
+ * 構造:
+ *   .ice-loader-book          … 本全体。::before/::after が左右の表紙(静止)
+ *     └ .ice-loader-page × 4  … めくれるページ。背表紙を軸に回転する
+ * ========================================================================= */
+.ice-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+}
+
+/* ページ全体の読み込み待ち用。画面の中央あたりに見えるよう高さを確保する。
+   dvh(dynamic viewport height)は、スマホでURLバーが出入りして画面の高さが
+   変わっても実際の表示領域に追従してくれる単位。
+   未対応ブラウザ向けに、先に vh でも書いておく（後勝ちで上書きされる）。 */
+.ice-loader--full {
+    min-height: 70vh;
+    min-height: 70dvh;
+}
+
+.ice-loader-book {
+    position: relative;
+    /* 開いた状態の本のサイズ。左右の表紙がそれぞれ半分(60px)を占める */
+    width: 120px;
+    height: 84px;
+    /* perspective: 3Dの奥行きの強さ。
+       これが無いとページの回転が「ただ横に潰れるだけ」に見えてしまう。
+       数値が小さいほど手前から覗き込んだような強い遠近感になる。 */
+    perspective: 500px;
+}
+
+/* 左右の表紙（動かない土台）。
+   ::before が左、::after が右。中身のない飾りなのでHTMLには書かず
+   CSSの疑似要素で作っている。 */
+.ice-loader-book::before,
+.ice-loader-book::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.3),
+        rgba(150, 210, 255, 0.12));
+    border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.ice-loader-book::before {
+    left: 0;
+    /* 外側(左)の角だけ丸める。内側は背表紙なので角張らせる */
+    border-radius: 7px 2px 2px 7px;
+}
+
+.ice-loader-book::after {
+    right: 0;
+    border-radius: 2px 7px 7px 2px;
+}
+
+/* めくれるページ */
+.ice-loader-page {
+    position: absolute;
+    top: 4px;
+    /* 本の中央(背表紙)から右側に置く */
+    left: 50%;
+    width: 57px;
+    height: calc(100% - 8px);
+    box-sizing: border-box;
+    /* transform-origin: 回転の軸。left center = 左端(背表紙)を軸にする。
+       これが本のページがめくれる動きの要。 */
+    transform-origin: left center;
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.92),
+        rgba(217, 241, 255, 0.75));
+    border-radius: 1px 6px 6px 1px;
+    box-shadow: 0 2px 8px rgba(0, 20, 50, 0.35);
+    animation: ice-page-flip 2.4s infinite ease-in-out;
+    /* 1枚ごとの開始のずれは book-loader.tsx 側から
+       style={{ animationDelay }} で渡している */
+}
+
+/* めくり1周分の動き。
+   仕組みのポイントは「見えない間に元の位置へ戻す」こと。
+   ページは右(0deg)から左(-180deg)へめくれるが、そのまま次の周回に入ると
+   左から右へ一瞬で戻る動きが見えてしまい、不自然になる。
+   そこで左に重なったあと一度consumeして見えなくし(opacity:0)、
+   その隙に角度を0degへ戻してから、右側で静かに現れ直している。 */
+@keyframes ice-page-flip {
+    0% {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+    /* 右から左へめくれる（ここが実際に見える動き） */
+    35% {
+        transform: rotateY(-180deg);
+        opacity: 1;
+    }
+    /* left側に重なったまま少し待つ */
+    48% {
+        transform: rotateY(-180deg);
+        opacity: 1;
+    }
+    /* 左の表紙の上で静かに消える */
+    58% {
+        transform: rotateY(-180deg);
+        opacity: 0;
+    }
+    /* 見えていない間に右側へ戻す（ここが見えると不自然になる部分） */
+    59% {
+        transform: rotateY(0deg);
+        opacity: 0;
+    }
+    88% {
+        transform: rotateY(0deg);
+        opacity: 0;
+    }
+    /* 右側で静かに現れ、次の周回へ */
+    100% {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+}
+
+.ice-loader-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ice-text-muted);
+    letter-spacing: 0.04em;
+}
+
+/* OS側で「視差効果を減らす」を有効にしている人にはページめくりを止める。
+   本の絵は静止したまま残り、「読み込み中…」の文字で状況は伝わる。 */
+@media (prefers-reduced-motion: reduce) {
+    .ice-loader-page {
+        animation: none;
+    }
+}
