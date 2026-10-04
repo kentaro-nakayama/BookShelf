@@ -1,18 +1,14 @@
 // ============================================================================
-// トップページ = 本棚一覧画面（自分で書く）
+// トップページ = ホーム（ダッシュボード）
 // ----------------------------------------------------------------------------
-// ログインユーザーが登録した本(user_books)を、本の情報(books)と一緒に一覧表示する。
+// 以前はこのページが本棚の全件一覧だったが、グローバルナビの「ホーム」と
+// 「リスト」で役割を分けたため、次のように変更した。
+//   ホーム(/)      … 読書中の本・最近追加した本だけを抜粋したダッシュボード。
+//                    アプリを開いてすぐ「読みかけの本の続き」に辿れるようにする。
+//   リスト(/books) … 全件一覧 + ステータス/ジャンル/評価での絞り込み。
 // ============================================================================
 
-// ----------------------------------------------------------------------------
-// 最初に必要なimport
-// ----------------------------------------------------------------------------
-import Image from "next/image";
 import Link from "next/link";
-// CSSProperties: styleプロパティに独自CSS変数(--ice-shine-delay)を
-// 渡すための型。TypeScriptは標準だと style に "--任意の名前" のような
-// キーを許可してくれないので、CSSPropertiesに手動でその型を追加している。
-import type { CSSProperties } from "react";
 // auth, signIn: 今ログイン中かどうかを調べる関数と、Googleログインを
 //               開始するための関数（どちらもheader.tsxで使ったのと同じ）
 import { auth, signIn } from "@/auth";
@@ -25,14 +21,13 @@ import { userBooks } from "@/db/schema";
 //
 // eq, desc:  SQLの条件・並び順を書くためのヘルパー関数（drizzle-ormから提供）
 import { eq, desc } from "drizzle-orm";
+// BookCard: 本棚カード1枚分の表示部品（リスト画面と共通）
+// BookStatus: "want_to_read" | "reading" | "finished" のいずれかを表す型
+import BookCard, { type BookStatus } from "@/components/book-card";
 
-// ステータスの内部値(DB上の文字列)と、画面に出す日本語ラベル・バッジ用の
-// クラス名(globals.cssの.ice-status-pill--*)を対応付ける表。
-const STATUS_LABEL: Record<string, string> = {
-    want_to_read: "読みたい",
-    reading: "読書中",
-    finished: "読了",
-};
+// ホームに「最近追加した本」として並べる最大枚数。
+// これを超える分は「リスト」画面で見てもらう。
+const RECENT_LIMIT = 6;
 
 export default async function Home() {
     // ログイン状態を取得
@@ -83,8 +78,14 @@ export default async function Home() {
             </div>
         )
     }
+
     // ログインしている場合
-    // ユーザーが本棚に登録している本をすべて取得
+    // ユーザーが本棚に登録している本をすべて取得（新しく登録した順）
+    //
+    // 「読書中だけ」「最近の6冊だけ」をそれぞれSQLで取りに行くこともできるが、
+    // そうするとDBへの問い合わせが複数回になる。個人〜小規模利用（要件定義書8章）
+    // で1人の蔵書は多くても数百冊程度なので、1回でまとめて取得してから
+    // JavaScript側で振り分けるほうが単純で速い。
     const myBooks = await db.query.userBooks.findMany({
         where: eq(userBooks.userId, session.user!.id!),
         //「user_idが、今ログイン中のユーザーのidと一致する行だけ」に絞り込む
@@ -96,6 +97,7 @@ export default async function Home() {
         ]
     })
 
+    // 1冊も登録がない場合は、本を追加する導線だけを見せる
     if (myBooks.length === 0) {
         return (
             <div className="mx-auto max-w-5xl px-6 py-16 flex flex-col items-center gap-4 text-center sm:px-12">
@@ -108,50 +110,111 @@ export default async function Home() {
         )
     }
 
+    // ステータス別に件数を数える。
+    // filter()は「条件に合う要素だけの新しい配列」を作る関数なので、
+    // その配列の長さ(length)がそのまま件数になる。
+    const readingBooks = myBooks.filter((myBook) => myBook.status === "reading");
+    const wantToReadCount = myBooks.filter(
+        (myBook) => myBook.status === "want_to_read",
+    ).length;
+    const finishedCount = myBooks.filter(
+        (myBook) => myBook.status === "finished",
+    ).length;
+
+    // 最近追加した本。myBooksはcreatedAtの降順で取得しているので、
+    // 先頭からRECENT_LIMIT件を切り出せば「新しい順の6冊」になる。
+    // slice()は元の配列を変更せず、切り出した新しい配列を返す。
+    const recentBooks = myBooks.slice(0, RECENT_LIMIT);
+
+    // 件数バッジ（「読みたい 3冊」など）の定義。
+    // href先にクエリパラメータ(?status=...)を付けておくと、
+    // リスト画面がそれを読み取って最初から絞り込んだ状態で開く。
+    const statusSummary = [
+        { status: "want_to_read", label: "読みたい", count: wantToReadCount },
+        { status: "reading", label: "読書中", count: readingBooks.length },
+        { status: "finished", label: "読了", count: finishedCount },
+    ];
+
     return (
-        <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8 sm:px-12">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <h2 className="text-2xl font-bold">本棚</h2>
-                {/* 本を検索して本棚に追加する画面(/books/search)への入り口 */}
-                <Link href="/books/search" className="ice-button">
-                    本を追加する
-                </Link>
-            </div>
-            <div className="flex flex-wrap gap-5">
-                {myBooks.map((myBook, index) => (
-                    <div
-                        className="ice-card w-full sm:w-[270px]"
-                        key={myBook.book.id}
-                        // カードごとに光るタイミングをずらす(0s, 0.5s, 1s, ... を6枚ごとに繰り返す)
-                        style={{ "--ice-shine-delay": `${(index % 6) * 0.5}s` } as CSSProperties}
-                    >
-                        <span className={`ice-status-pill ice-status-pill--${myBook.status} self-start mb-3`}>
-                            {STATUS_LABEL[myBook.status]}
-                        </span>
-                        <div className="ice-cover">
-                            {myBook.book.thumbnail_url ? (
-                                <Image
-                                    src={myBook.book.thumbnail_url}
-                                    alt={myBook.book.title}
-                                    fill
-                                    sizes="(max-width: 640px) 100vw, 270px"
-                                    style={{ objectFit: "cover" }}
-                                />
-                            ) : (
-                                <span className="text-4xl font-bold opacity-50">
-                                    {myBook.book.title.slice(0, 1)}
-                                </span>
-                            )}
-                        </div>
-                        <p className="ice-card-title">{myBook.book.title}</p>
-                        <p className="ice-card-author">{myBook.book.author}</p>
-                        <p className="ice-card-meta">{myBook.book.published_date}</p>
-                        <Link href={`/books/${myBook.id}`} className="ice-button mt-auto">
-                            詳細を見る
+        <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10 sm:px-12">
+            {/* --- あいさつ + ステータス別の件数 ------------------------------ */}
+            <div className="flex flex-col gap-4">
+                <h2 className="text-2xl font-bold">
+                    {/* Googleアカウントの表示名が取れない場合もあるので、
+                        その場合は名前なしの文面にフォールバックする */}
+                    {session.user?.name
+                        ? `${session.user.name} さんの本棚`
+                        : "あなたの本棚"}
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                    {statusSummary.map((summary) => (
+                        <Link
+                            key={summary.status}
+                            href={`/books?status=${summary.status}`}
+                            className={`ice-status-pill ice-status-pill--${summary.status}`}
+                        >
+                            {summary.label} {summary.count}冊
                         </Link>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
+
+            {/* --- 読書中の本 ------------------------------------------------ */}
+            <section className="flex flex-col gap-5">
+                <h3 className="text-xl font-bold">読書中</h3>
+                {readingBooks.length === 0 ? (
+                    <p className="text-sm text-[color:var(--ice-text-muted)]">
+                        読書中の本はありません。リストから本のステータスを
+                        「読書中」に変えると、ここに表示されます。
+                    </p>
+                ) : (
+                    <div className="flex flex-wrap gap-5">
+                        {readingBooks.map((myBook, index) => (
+                            <BookCard
+                                key={myBook.id}
+                                userBookId={myBook.id}
+                                title={myBook.book.title}
+                                author={myBook.book.author}
+                                publishedDate={myBook.book.published_date}
+                                thumbnailUrl={myBook.book.thumbnail_url}
+                                // DBのstatusカラムの型はBookStatusと同じ3値だが、
+                                // Drizzleの型とこちらで定義した型を結びつけるために
+                                // 明示的に型を指定している
+                                status={myBook.status as BookStatus}
+                                index={index}
+                            />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* --- 最近追加した本 -------------------------------------------- */}
+            <section className="flex flex-col gap-5">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                    <h3 className="text-xl font-bold">最近追加した本</h3>
+                    {/* 抜粋しか出していないので、全件はリスト画面へ案内する */}
+                    <Link
+                        href="/books"
+                        className="text-sm font-semibold text-[color:var(--ice-text-muted)] underline"
+                    >
+                        すべて見る（{myBooks.length}冊）
+                    </Link>
+                </div>
+                <div className="flex flex-wrap gap-5">
+                    {recentBooks.map((myBook, index) => (
+                        <BookCard
+                            key={myBook.id}
+                            userBookId={myBook.id}
+                            title={myBook.book.title}
+                            author={myBook.book.author}
+                            publishedDate={myBook.book.published_date}
+                            thumbnailUrl={myBook.book.thumbnail_url}
+                            status={myBook.status as BookStatus}
+                            index={index}
+                        />
+                    ))}
+                </div>
+            </section>
         </div>
     )
 }

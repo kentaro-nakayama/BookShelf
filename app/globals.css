@@ -558,3 +558,577 @@ body {
         height: 160px;
     }
 }
+/* ============================================================================
+ * グローバルナビゲーション (components/nav.tsx)
+ * ----------------------------------------------------------------------------
+ * 同じ<Nav>コンポーネントを2回描画し、どちらを見せるかはここのCSSで決める。
+ *   .ice-nav--bottom  … スマホ用。画面下部に固定したタブバー
+ *   .ice-nav--desktop … PC用。ヘッダー内に並ぶ横並びメニュー
+ * 切り替えの境目は768px（タブレット縦持ちまではスマホ扱い）。
+ * display:none にした側はブラウザの読み上げ対象からも外れるので、
+ * 「同じメニューが2回読まれる」ことにはならない。
+ * ========================================================================= */
+.ice-nav {
+    display: flex;
+    align-items: center;
+}
+
+/* ----------------------------------------------------------------------------
+ * タブ1つ分の見た目（下部タブバー・ヘッダー内メニュー共通）
+ * -------------------------------------------------------------------------- */
+.ice-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    /* 通常時は少し暗く、選択中(.ice-nav-item--active)だけ明るくする。
+       nav.tsxのSVGは stroke="currentColor" なので、この color の指定が
+       アイコンの線の色にもそのまま反映される。 */
+    color: var(--ice-text-muted);
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.ice-nav-item:hover {
+    color: var(--ice-text);
+    text-decoration: none;
+}
+
+.ice-nav-item--active {
+    color: var(--ice-text);
+}
+
+.ice-nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ----------------------------------------------------------------------------
+ * スマホ用: 画面下部に固定するタブバー
+ * -------------------------------------------------------------------------- */
+.ice-nav--bottom {
+    /* position:fixed で画面に貼り付ける。スクロールしても下端に残り続けるので、
+       どのページのどこを見ていても1タップで他の画面に移動できる。 */
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* ヘッダー(.ice-headerはz-index:10)より手前に出す */
+    z-index: 20;
+    justify-content: space-around;
+    /* 背景はアプリの地の色(html側に指定している#05070f)と同じ不透明色にする。
+       当初はヘッダーと同じすりガラス(半透明+backdrop-filter)にしていたが、
+       タブバーの裏を本のカードや表紙画像が流れていくため、
+       スクロール位置によってアイコンや文字が背景に埋もれて見えづらかった。
+       不透明にすると背景が何であっても文字とのコントラストが一定になる。
+       不透明にしたのでbackdrop-filter(背景をぼかす指定)は不要になり、
+       iOS Safariで負荷の高い処理を1つ減らせる。 */
+    background: #05070f;
+    /* 本文との境目が分からなくならないよう、上辺に細い線を残す */
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    /* env(safe-area-inset-bottom):
+       iPhoneのホームバー(画面下端の横棒)が重なる領域の高さを、ブラウザが
+       教えてくれる環境変数。これを下padding に足しておかないと、タブが
+       ホームバーの下に潜り込んで押しにくくなる。
+       ホームバーのない端末では0pxになるので、常に書いておいて問題ない。 */
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.ice-nav--bottom .ice-nav-item {
+    /* flex:1 で4つのタブを均等幅に分ける */
+    flex: 1;
+    /* アイコンの下にラベルを置く縦並び */
+    flex-direction: column;
+    gap: 4px;
+    /* 要件定義書8章の「タップ対象は44px以上」を満たすための最低高さ。
+       実際には上下paddingを含めて約60pxになる。 */
+    min-height: 44px;
+    padding: 9px 0 7px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* 選択中のタブは、文字色だけでなく上端に明るいラインを出して
+   「今ここ」をはっきりさせる（色だけの違いは気づきにくいため）。 */
+.ice-nav--bottom .ice-nav-item--active {
+    position: relative;
+}
+
+.ice-nav--bottom .ice-nav-item--active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 26px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ffffff, #bfeaff);
+}
+
+/* ----------------------------------------------------------------------------
+ * 中央の「探す」だけ強調する（.ice-nav-item--center）
+ * -------------------------------------------------------------------------- */
+/* このアプリで一番使う操作は「本を探して登録する」なので、
+   .ice-button と同じ白〜水色のグラデーションの丸ボタンにして、
+   少し上に飛び出させて目立たせる。 */
+.ice-nav--bottom .ice-nav-item--center .ice-nav-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    /* 丸ボタンの中のアイコンは、背景が明るいので濃い色にする。
+       SVGは stroke="currentColor" なので、ここで color を上書きすれば
+       アイコンの線の色が変わる。 */
+    color: #0c2742;
+    box-shadow:
+        0 8px 20px rgba(90, 170, 230, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    /* バーの上に飛び出させる。同じ分だけ下に余白を足して、
+       ラベルの位置が他のタブとずれないようにしている。 */
+    margin-top: -18px;
+    margin-bottom: 2px;
+    transition: transform 0.25s ease;
+}
+
+.ice-nav--bottom .ice-nav-item--center:hover .ice-nav-icon {
+    transform: translateY(-2px);
+}
+
+/* 中央ボタンは背景が常に明るいので、選択中でも上端のラインは出さない
+   （丸ボタン自体が十分目立っているため） */
+.ice-nav--bottom .ice-nav-item--center.ice-nav-item--active::before {
+    display: none;
+}
+
+/* ----------------------------------------------------------------------------
+ * PC用: ヘッダー内の横並びメニュー
+ * -------------------------------------------------------------------------- */
+.ice-nav--desktop {
+    gap: 4px;
+}
+
+.ice-nav--desktop .ice-nav-item {
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ice-nav--desktop .ice-nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 選択中は背景をうっすら白くして「へこんでいる」ように見せる */
+.ice-nav--desktop .ice-nav-item--active {
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* PCでも「探す」は .ice-button と同じ見た目にして強調する */
+.ice-nav--desktop .ice-nav-item--center {
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+    box-shadow:
+        0 8px 18px rgba(90, 170, 230, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.ice-nav--desktop .ice-nav-item--center:hover {
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+}
+
+/* ----------------------------------------------------------------------------
+ * 2つのナビの出し分け
+ * -------------------------------------------------------------------------- */
+/* 767px以下(スマホ): 下部タブバーのみ */
+@media (max-width: 767px) {
+    .ice-nav--desktop {
+        display: none;
+    }
+
+    /* 下部タブバーは position:fixed で浮いているため、ページの一番下の
+       コンテンツがタブバーに隠れてしまう。bodyの下に、タブバーの高さ分の
+       余白を足して隠れないようにする。
+       :has(.ice-nav--bottom) ―― 「中に下部タブバーがあるbodyだけ」に限定する
+       書き方(CSSの親セレクタ)。未ログイン時はナビを描画しないので、
+       サインイン画面に無駄な余白が付くのを防げる。 */
+    body:has(.ice-nav--bottom) {
+        /* 72px = タブバーの実測高さ(約70px)＋わずかな余裕。
+           中央の「探す」ボタンがバーの上に飛び出すぶん、
+           タブバーは見た目より少し高くなる点に注意。 */
+        padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    }
+}
+
+/* 768px以上(タブレット横〜PC): ヘッダー内メニューのみ */
+@media (min-width: 768px) {
+    .ice-nav--bottom {
+        display: none;
+    }
+}
+
+/* ナビが入るぶんヘッダーが窮屈になるので、PCの左右余白を少し詰める */
+@media (min-width: 768px) {
+    .ice-header {
+        padding: 14px 28px;
+        gap: 20px;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+ * ヘッダーのユーザー情報
+ * -------------------------------------------------------------------------- */
+/* .ice-user はアカウント画面へのリンク(<a>)になったので、
+   リンク特有の下線・色を打ち消しておく */
+.ice-user {
+    text-decoration: none;
+    color: inherit;
+    padding: 4px;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.ice-user:hover {
+    text-decoration: none;
+    color: inherit;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* スマホではヘッダーの横幅が足りないので、ユーザー名は出さずアイコンだけにする
+   （名前はアカウント画面で確認できる） */
+@media (max-width: 767px) {
+    .ice-user-name {
+        display: none;
+    }
+}
+
+/* ============================================================================
+ * リスト画面の絞り込みUI (app/books/page.tsx)
+ * ========================================================================= */
+
+/* ----------------------------------------------------------------------------
+ * ステータス切り替えタブ（すべて / 読みたい / 読書中 / 読了）
+ * -------------------------------------------------------------------------- */
+.ice-filter-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    /* スマホで4つのタブが入りきらない場合に横スクロールできるようにする。
+       ページ全体に横スクロールを出すのは避けたいが（要件定義書8章）、
+       この帯の中だけのスクロールなら問題ない。 */
+    overflow-x: auto;
+    /* iOSで指を離したあとも滑るように動かす */
+    -webkit-overflow-scrolling: touch;
+    /* スクロールバーを隠す（Firefox / Chrome・Safari） */
+    scrollbar-width: none;
+}
+
+.ice-filter-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.ice-filter-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 横スクロール時にタブが潰れないよう最低幅を確保する */
+    min-width: 72px;
+    /* 要件定義書8章の「タップ対象は44px以上」を満たす高さ */
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ice-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ice-filter-tab:hover {
+    color: var(--ice-text);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 選択中のタブは .ice-button と同じ白〜水色にして、はっきり区別する */
+.ice-filter-tab--active {
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.ice-filter-tab--active:hover {
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+}
+
+/* ----------------------------------------------------------------------------
+ * ジャンル・評価の絞り込みフォーム
+ * -------------------------------------------------------------------------- */
+.ice-filter-form {
+    display: flex;
+    /* スマホでは縦積み。768px以上で横並びに切り替える（下のメディアクエリ） */
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.ice-filter-form .ice-field {
+    /* 横並びになったときに2つのセレクトが均等幅になるようにする */
+    flex: 1;
+}
+
+.ice-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ice-filter-clear {
+    font-size: 13px;
+    color: var(--ice-text-muted);
+    text-decoration: underline;
+}
+
+.ice-filter-clear:hover {
+    color: var(--ice-text);
+}
+
+@media (min-width: 768px) {
+    .ice-filter-form {
+        flex-direction: row;
+        /* 高さの違う要素(ラベル付きセレクトとボタン)の下端を揃える */
+        align-items: flex-end;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+ * ステータスバッジをリンクとして使う場合
+ * -------------------------------------------------------------------------- */
+/* ホーム画面・アカウント画面の件数バッジ（「読みたい 3冊」など）は
+   .ice-status-pill を <a> に当てて使っているので、リンクの下線を消し、
+   押せることが分かるようにカーソルとホバーを足す */
+a.ice-status-pill {
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+a.ice-status-pill:hover {
+    text-decoration: none;
+    transform: translateY(-2px);
+    filter: brightness(1.15);
+}
+
+/* ----------------------------------------------------------------------------
+ * 下部タブバーのラベルの詰まり対策
+ * -------------------------------------------------------------------------- */
+/* タブが5つになるとスマホの横幅を5等分するため、1タブあたり60〜70px程度しか
+   取れない。「マイリスト」「アカウント」のような5文字のラベルが折り返して
+   タブの高さがばらつくのを防ぐ。 */
+.ice-nav--bottom .ice-nav-label {
+    white-space: nowrap;
+}
+
+/* iPhone SEなど幅の狭い端末では、文字をもう一段小さくして収める */
+@media (max-width: 360px) {
+    .ice-nav--bottom .ice-nav-item {
+        font-size: 10px;
+    }
+}
+
+/* ============================================================================
+ * 本棚カード 横長レイアウト (components/book-card.tsx)
+ * ----------------------------------------------------------------------------
+ * .ice-card の上に重ねて使う修飾クラス。
+ * .ice-card 側のガラスの質感・霜のハイライト・3秒に1回光る演出・
+ * ホバー時の浮き上がりはそのまま使い回し、ここでは「縦積み→横並び」と
+ * 「高さ200px固定」への作り替えだけを担当する。
+ * ========================================================================= */
+.ice-card--book {
+    /* .ice-card は flex-direction: column なので横並びに上書きする */
+    flex-direction: row;
+    /* 子要素(表紙・本文)をカードの高さいっぱいに引き伸ばす */
+    align-items: stretch;
+    gap: 16px;
+    /* 指定どおり高さは200px固定。
+       .ice-card 側のコメントにあるとおり本来は高さを指定しない方針だったが、
+       このカードは「表紙＋数行のテキスト」しか入らず中身の量で高さが
+       変わらないため、固定しても行ごとの高さがばらつく問題は起きない。
+       むしろ固定したほうが一覧の見た目が揃う。 */
+    height: 200px;
+    padding: 16px;
+    /* カード全体が<a>になったので、リンクの下線と色を打ち消す */
+    text-decoration: none;
+    color: var(--ice-text);
+}
+
+.ice-card--book:hover {
+    text-decoration: none;
+    color: var(--ice-text);
+}
+
+/* ----------------------------------------------------------------------------
+ * 左: 表紙
+ * -------------------------------------------------------------------------- */
+/* 一覧の縦型カードで使っている .ice-cover とは別のクラスにしている。
+   .ice-cover は書籍検索画面(/books/search)でも使っており、
+   そちらは今までどおり縦型のままにしたいため。 */
+.ice-book-cover {
+    /* position:relative … next/imageのfillは「一番近いposition指定済みの
+       親要素」いっぱいに広がる仕組みなので、この指定が必須 */
+    position: relative;
+    /* flex-shrink:0 … 右のテキストが長くても表紙が潰されないようにする */
+    flex-shrink: 0;
+    width: 120px;
+    /* 高さはカードの中身の高さいっぱい(200px - 上下padding32px = 168px)。
+       表紙の縦横比はおおよそ 1:1.4 なので、幅120pxとよく釣り合う。 */
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 表紙画像がない本のための下地 */
+    background: linear-gradient(145deg, #2f4f7a, #0f2238);
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ----------------------------------------------------------------------------
+ * 右: ステータスバッジ + 書誌情報
+ * -------------------------------------------------------------------------- */
+.ice-book-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* min-width:0 が重要。
+       flexアイテムは既定で「中身より小さくならない(min-width:auto)」ため、
+       長いタイトルがあるとこの領域が押し広げられ、カードからはみ出したり
+       表紙が潰れたりする。0を指定して初めて「はみ出す分は省略する」が効く。 */
+    min-width: 0;
+}
+
+/* タイトル・著者・出版日を囲む枠 */
+.ice-book-info {
+    /* 残りの高さをすべて使う（バッジの下からカード下端まで） */
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    /* 文字が枠からはみ出した分は隠す */
+    overflow: hidden;
+}
+
+/* 縦型カード用に付けていた下マージンは、この横長カードでは
+   gapで間隔を作るので打ち消す */
+.ice-card--book .ice-card-title,
+.ice-card--book .ice-card-author,
+.ice-card--book .ice-card-meta {
+    margin: 0;
+}
+
+/* タイトルは最大2行で打ち切り、それ以上は「...」にする。
+   高さ200px固定なので、長いタイトルを放置すると枠からあふれてしまう。
+   -webkit-box系の3点セットは、複数行の省略を行うための定番の書き方
+   （-webkit-の接頭辞付きだが、現在は主要ブラウザすべてで動作する）。 */
+.ice-card--book .ice-card-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    /* 1行の高さを決めておくと、1行のときと2行のときで
+       下の著者名の位置が安定する */
+    line-height: 1.4;
+    /* overflow-wrap:anywhere … 途中に空白がない長い文字列（ISBNやURLが
+       そのままタイトルに入っている本など）は、通常どこでも改行されないため
+       枠を突き抜けてしまう。この指定で「どこででも折り返してよい」ことにし、
+       上の2行での打ち切り(...)が正しく効くようにする。 */
+    overflow-wrap: anywhere;
+}
+
+/* 著者名は1行で省略する */
+.ice-card--book .ice-card-author {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* 出版日は常に枠の一番下に寄せる */
+.ice-card--book .ice-card-meta {
+    margin-top: auto;
+}
+
+/* ----------------------------------------------------------------------------
+ * スマホ幅の調整
+ * -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    /* スマホでは高さを150pxにする。
+       1画面に並ぶ冊数が増え、スクロール量を減らせる（要件定義書3.1の
+       スマホ優先の方針）。
+       .ice-card のスマホ用指定(padding:18px 16px)も打ち消して、
+       横長カード用の詰めた余白に戻す。 */
+    .ice-card--book {
+        height: 150px;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    /* 画面が狭いと表紙120pxではテキストの幅が足りなくなるので細くする。
+       高さ150px - 上下padding24px = 126px に対して幅90pxで、
+       縦横比はおおよそ 1:1.4（一般的な書影の比率）になる。 */
+    .ice-book-cover {
+        width: 90px;
+    }
+
+    /* ------------------------------------------------------------------
+     * 高さ150pxに中身を収めるための縮小
+     * ------------------------------------------------------------------
+     * 使える高さの内訳:
+     *   カードの中身      126px (150 - 上下padding24)
+     *   - ステータスバッジ 約22px
+     *   - バッジと枠の隙間   6px
+     *   = 情報枠の高さ     約98px
+     *     - 枠の上下padding 16px
+     *     = 文字に使える高さ 約82px
+     * ここにタイトル2行・著者1行・出版日1行を入れるため、
+     * 文字サイズと行間を一段ずつ詰めている。 */
+    .ice-book-body {
+        gap: 6px;
+    }
+
+    .ice-book-info {
+        padding: 8px 10px;
+        gap: 3px;
+    }
+
+    .ice-card--book .ice-card-title {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .ice-card--book .ice-card-author {
+        font-size: 12px;
+    }
+
+    .ice-card--book .ice-card-meta {
+        font-size: 11px;
+    }
+}

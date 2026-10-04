@@ -1,0 +1,35 @@
+- generic [ref=f4e2]:
+  - heading "本棚カード（高さ200px・カード全体がリンク）" [level=2] [ref=f4e3]
+  - generic [ref=f4e4]:
+    - link "読書中 吾輩は猫である 夏目 漱石 1905-10-06" [ref=f4e5] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f4e7]:
+        - generic [ref=f4e8]: 読書中
+        - generic [ref=f4e9]:
+          - paragraph [ref=f4e10]: 吾輩は猫である
+          - paragraph [ref=f4e11]: 夏目 漱石
+          - paragraph [ref=f4e12]: 1905-10-06
+    - link "リ 読みたい リーダブルコード ―より良いコードを書くためのシンプルで実践的なテクニック Dustin Boswell、Trevor Foucher、角 征典 2012-06-23" [ref=f4e13] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f4e14]: リ
+      - generic [ref=f4e16]:
+        - generic [ref=f4e17]: 読みたい
+        - generic [ref=f4e18]:
+          - paragraph [ref=f4e19]: リーダブルコード ―より良いコードを書くためのシンプルで実践的なテクニック
+          - paragraph [ref=f4e20]: Dustin Boswell、Trevor Foucher、角 征典
+          - paragraph [ref=f4e21]: 2012-06-23
+    - link "銀 読了 銀河鉄道の夜" [ref=f4e22] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f4e23]: 銀
+      - generic [ref=f4e25]:
+        - generic [ref=f4e26]: 読了
+        - paragraph [ref=f4e28]: 銀河鉄道の夜
+    - link "A 読了 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 2026-01-01" [ref=f4e29] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f4e30]: A
+      - generic [ref=f4e32]:
+        - generic [ref=f4e33]: 読了
+        - generic [ref=f4e34]:
+          - paragraph [ref=f4e35]: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          - paragraph [ref=f4e36]: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+          - paragraph [ref=f4e37]: 2026-01-01
