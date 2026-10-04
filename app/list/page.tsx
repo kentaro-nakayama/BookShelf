@@ -66,7 +66,7 @@ export default async function ListPage({ searchParams }: PageProps<"/list">) {
         .orderBy(desc(bookLists.createdAt));
 
     return (
-        <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-7 sm:px-12">
+        <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-6 sm:px-12">
             <h2 className="text-xl font-bold">マイリスト</h2>
 
             {/* --- 新規作成フォーム ------------------------------------------ */}
