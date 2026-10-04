@@ -2,6 +2,7 @@ import { auth, signIn } from "@/auth";
 import Image from "next/image";
 import Link from "next/link";
 import Nav from "@/components/nav";
+import { SubmitButton } from "@/components/submit-button";
 // このヘッダーはshadcn/uiの<Button>ではなく、globals.cssで定義した
 // .ice-button（すりガラス風のピルボタン）を直接当てたネイティブの<button>を使う。
 // 理由: <Button>はTailwindのユーティリティクラス(bg-primary等)で見た目を
@@ -65,9 +66,9 @@ export default async function Header() {
                     await signIn("google");
                 }}
             >
-                <button type="submit" className="ice-button ice-button--sm">
+                <SubmitButton className="ice-button ice-button--sm" loadingLabel="ログインしています…">
                     ログイン
-                </button>
+                </SubmitButton>
             </form>
         </header>
     );

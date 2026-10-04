@@ -24,6 +24,7 @@ import { eq, desc } from "drizzle-orm";
 // BookCard: 本棚カード1枚分の表示部品（リスト画面と共通）
 // BookStatus: "want_to_read" | "reading" | "finished" のいずれかを表す型
 import BookCard, { type BookStatus } from "@/components/book-card";
+import { SubmitButton } from "@/components/submit-button";
 
 // ホームに「最近追加した本」として並べる最大枚数。
 // これを超える分は「リスト」画面で見てもらう。
@@ -70,9 +71,9 @@ export default async function Home() {
                             await signIn("google");
                         }}
                     >
-                        <button type="submit" className="ice-button mt-2">
+                        <SubmitButton className="ice-button mt-2" loadingLabel="ログインしています…">
                             Googleでログイン
-                        </button>
+                        </SubmitButton>
                     </form>
                 </div>
             </div>

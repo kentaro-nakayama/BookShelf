@@ -18,12 +18,12 @@
 // 「常にどれかがめくれている」状態を作っている。
 //
 // CYCLE_SECONDS は globals.css の
-// `animation: ice-page-flip 1.4s ...` と必ず同じ値にすること。
+// `animation: ice-page-flip 0.35s ...` と必ず同じ値にすること。
 // ずれると開始のタイミングが1周に均等に散らばらず、
 // めくりが途切れる瞬間ができてしまう。
 // 小さくするほどページが速くめくれる。
 const PAGE_COUNT = 4;
-const CYCLE_SECONDS = 1.4;
+const CYCLE_SECONDS = 0.35;
 
 type BookLoaderProps = {
     // 画面中央に大きく出すか(true)、その場に小さく出すか(false)。
@@ -57,7 +57,7 @@ export default function BookLoader({
                         key={index}
                         className="ice-loader-page"
                         // ページごとに、めくり始めるタイミングをずらす。
-                        // 1.4秒 ÷ 4枚 = 0.35秒ずつずらすと、1周の中に均等に散らばる。
+                        // 0.35秒 ÷ 4枚 = 0.0875秒ずつずらすと、1周の中に均等に散らばる。
                         style={{
                             animationDelay: `${(index * CYCLE_SECONDS) / PAGE_COUNT}s`,
                         }}

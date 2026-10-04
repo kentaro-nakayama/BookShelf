@@ -20,6 +20,7 @@ import { searchBooks } from "@/lib/books/search";
 // BookCard: 本1冊分のカード表示部品。ホーム・本棚一覧と同じものを使い、
 // 画面ごとに見た目がばらつかないようにしている。
 import BookCard from "@/components/book-card";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function SearchPage({searchParams}: PageProps<"/books/search">) {
     const params = await searchParams;
@@ -51,7 +52,9 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
                     placeholder="タイトルで検索"
                     className="ice-input flex-1"
                 />
-                <button type="submit" className="ice-button sm:w-auto">検索</button>
+                <SubmitButton className="ice-button sm:w-auto" loadingLabel="検索しています…">
+                    検索
+                </SubmitButton>
             </form>
             <div className="flex flex-wrap gap-5">
                 { searchFailed && (

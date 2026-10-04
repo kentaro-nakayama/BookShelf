@@ -17,6 +17,7 @@ import { bookLists, bookListItems } from "@/db/schema";
 import { and, eq, asc } from "drizzle-orm";
 import BookCard, { type BookStatus } from "@/components/book-card";
 import { deleteList } from "../actions";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function ListDetailPage({ params }: PageProps<"/list/[id]">) {
     const { id } = await params;
@@ -109,9 +110,9 @@ export default async function ListDetailPage({ params }: PageProps<"/list/[id]">
             {/* 消えるのはリストと「どの本が入っているか」の紐付けだけで、
                 本棚の本そのものは残る。 */}
             <form action={deleteList.bind(null, list.id)} className="mt-4">
-                <button type="submit" className="ice-button ice-button--danger">
+                <SubmitButton className="ice-button ice-button--danger" loadingLabel="削除しています…">
                     このリストを削除
-                </button>
+                </SubmitButton>
             </form>
         </div>
     );

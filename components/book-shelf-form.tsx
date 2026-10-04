@@ -9,6 +9,8 @@
 // 「追加か編集か」を知らなくてよいようにしている。
 // ============================================================================
 
+import { SubmitButton } from "@/components/submit-button";
+
 type Genre = {
     id: number;
     name: string;
@@ -140,7 +142,9 @@ export function BookShelfForm({
                 </div>
             )}
 
-            <button type="submit" className="ice-button self-start">{submitLabel}</button>
+            <SubmitButton className="ice-button self-start" loadingLabel="保存しています…">
+                {submitLabel}
+            </SubmitButton>
         </form>
     );
 }

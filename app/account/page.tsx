@@ -27,6 +27,7 @@ import { userBooks } from "@/db/schema";
 // count: SQLのCOUNT(*)（件数を数える）を使うためのヘルパー
 import { eq, count } from "drizzle-orm";
 import { STATUS_LABEL, type BookStatus } from "@/components/book-card";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function AccountPage() {
     const session = await auth();
@@ -157,9 +158,9 @@ export default async function AccountPage() {
                         await signOut();
                     }}
                 >
-                    <button type="submit" className="ice-button ice-button--danger">
+                    <SubmitButton className="ice-button ice-button--danger" loadingLabel="ログアウトしています…">
                         ログアウトする
-                    </button>
+                    </SubmitButton>
                 </form>
             </div>
         </div>

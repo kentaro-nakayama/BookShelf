@@ -18,6 +18,7 @@ import { bookLists, bookListItems } from "@/db/schema";
 // count: SQLのCOUNT()。リストごとの冊数を数えるのに使う
 import { eq, desc, count } from "drizzle-orm";
 import { createList } from "./actions";
+import { SubmitButton } from "@/components/submit-button";
 
 // エラーの種類ごとの表示文。Server Action(actions.ts)が
 // /list?error=... の形で渡してくる。
@@ -103,9 +104,9 @@ export default async function ListPage({ searchParams }: PageProps<"/list">) {
                     />
                 </label>
 
-                <button type="submit" className="ice-button self-start">
+                <SubmitButton className="ice-button self-start" loadingLabel="リストを作成しています…">
                     作成する
-                </button>
+                </SubmitButton>
             </form>
 
             {/* --- リスト一覧 ------------------------------------------------ */}

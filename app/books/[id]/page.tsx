@@ -23,6 +23,7 @@ import { userBooks, userBookGenres, genres, bookLists, bookListItems } from "@/d
 import { eq, and, asc } from "drizzle-orm";
 import { updateBook, removeFromShelf } from "./actions";
 import { BookShelfForm } from "@/components/book-shelf-form";
+import { SubmitButton } from "@/components/submit-button";
 
 export default async function BookDetailPage({params}: PageProps<"/books/[id]">) {
     const { id } = await params;
@@ -81,9 +82,9 @@ export default async function BookDetailPage({params}: PageProps<"/books/[id]">)
                 submitLabel="更新する"
             />
             <form action={removeFromShelf.bind(null, userBook.id)}>
-                <button type="submit" className="ice-button ice-button--danger">
+                <SubmitButton className="ice-button ice-button--danger" loadingLabel="削除しています…">
                     本を削除
-                </button>
+                </SubmitButton>
             </form>
         </div>
     );
