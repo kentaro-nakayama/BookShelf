@@ -67,7 +67,7 @@ export default async function BookDetailPage({params}: PageProps<"/books/[id]">)
 
     return (
         <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-6 sm:px-12">
-            <h2 className="text-2xl font-bold">本を更新</h2>
+            <h2 className="text-xl font-bold">本を更新</h2>
             <BookShelfForm
                 bookTitle={userBook.book.title}
                 allGenres={allGenres}

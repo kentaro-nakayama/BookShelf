@@ -86,7 +86,7 @@ export default async function AccountPage() {
 
     return (
         <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-7 sm:px-12">
-            <h2 className="text-2xl font-bold">アカウント</h2>
+            <h2 className="text-xl font-bold">アカウント</h2>
 
             {/* --- プロフィール --------------------------------------------- */}
             <div className="ice-card gap-4">

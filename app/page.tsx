@@ -139,7 +139,7 @@ export default async function Home() {
         <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10 sm:px-12">
             {/* --- あいさつ + ステータス別の件数 ------------------------------ */}
             <div className="flex flex-col gap-4">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-xl font-bold">
                     {/* Googleアカウントの表示名が取れない場合もあるので、
                         その場合は名前なしの文面にフォールバックする */}
                     {session.user?.name
@@ -161,7 +161,7 @@ export default async function Home() {
 
             {/* --- 読書中の本 ------------------------------------------------ */}
             <section className="flex flex-col gap-5">
-                <h3 className="text-xl font-bold">読書中</h3>
+                <h3 className="text-lg font-bold">読書中</h3>
                 {readingBooks.length === 0 ? (
                     <p className="text-sm text-[color:var(--ice-text-muted)]">
                         読書中の本はありません。リストから本のステータスを
@@ -191,7 +191,7 @@ export default async function Home() {
             {/* --- 最近追加した本 -------------------------------------------- */}
             <section className="flex flex-col gap-5">
                 <div className="flex items-center justify-between flex-wrap gap-3">
-                    <h3 className="text-xl font-bold">最近追加した本</h3>
+                    <h3 className="text-lg font-bold">最近追加した本</h3>
                     {/* 抜粋しか出していないので、全件はリスト画面へ案内する */}
                     <Link
                         href="/books"

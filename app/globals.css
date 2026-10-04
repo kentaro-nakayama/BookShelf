@@ -518,7 +518,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--ice-text);
     text-decoration: none;
@@ -561,7 +561,7 @@ body {
     }
 
     .ice-logo {
-        font-size: 18px;
+        font-size: 24px;
     }
 
     /* カードの中身(表紙・タイトル等)はそのままに、余白だけ少し詰める */

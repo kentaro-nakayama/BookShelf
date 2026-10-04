@@ -67,7 +67,7 @@ export default async function ListPage({ searchParams }: PageProps<"/list">) {
 
     return (
         <div className="mx-auto max-w-2xl px-6 py-10 flex flex-col gap-7 sm:px-12">
-            <h2 className="text-2xl font-bold">マイリスト</h2>
+            <h2 className="text-xl font-bold">マイリスト</h2>
 
             {/* --- 新規作成フォーム ------------------------------------------ */}
             <form action={createList} className="ice-card gap-4">

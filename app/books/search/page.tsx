@@ -42,7 +42,7 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
 
     return (
         <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8 sm:px-12">
-            <h2 className="text-2xl font-bold">書籍検索</h2>
+            <h2 className="text-xl font-bold">書籍検索</h2>
             <form action="" method="GET" className="flex flex-col gap-3 sm:flex-row">
                 <input
                     type="text"

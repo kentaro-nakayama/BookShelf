@@ -66,7 +66,7 @@ export default async function ListDetailPage({ params }: PageProps<"/list/[id]">
             </Link>
 
             <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-bold">{list.name}</h2>
+                <h2 className="text-xl font-bold">{list.name}</h2>
                 {list.description && (
                     <p className="text-sm text-[color:var(--ice-text-muted)]">
                         {list.description}
