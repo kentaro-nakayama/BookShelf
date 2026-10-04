@@ -1,14 +1,19 @@
 // ============================================================================
 // 本棚カード（自分で書く）
 // ----------------------------------------------------------------------------
-// 本棚に登録済みの本を1枚のカードとして表示する部品。
-// ホーム画面(app/page.tsx)とリスト画面(app/books/page.tsx)の両方で使う。
+// 本を1枚のカードとして表示する部品。次の3画面で共通して使う。
+//   ホーム画面      (app/page.tsx)          … 登録済みの本 → 詳細ページへ
+//   本棚一覧画面    (app/books/page.tsx)    … 登録済みの本 → 詳細ページへ
+//   書籍検索画面    (app/books/search/page.tsx) … 未登録の本 → 登録確認ページへ
 //
 // なぜ部品として切り出したのか:
-//   もともとこのJSXはapp/page.tsxの中に直接書いていた。リスト画面でも
-//   まったく同じ見た目のカードが必要になったため、コピーして2か所に
-//   同じコードを持つのではなく、1か所にまとめて両方から呼ぶ形にした。
+//   もともとこのJSXは各ページに直接書いていた。同じ見た目のカードが
+//   3か所に必要になったため、コピーを3つ持つのではなく1か所にまとめた。
 //   こうしておけば「表紙の高さを変えたい」といった修正が1回で済む。
+//
+// 登録済みの本と検索結果の違いは2点だけで、どちらもプロパティで受け取る。
+//   - 押したときの飛び先(href)
+//   - 右上のバッジ … 登録済みなら読書ステータス、検索結果なら「本棚に追加」
 //
 // レイアウト:
 //   高さ200pxの横長カード。左に表紙、右にステータスバッジと書誌情報を置く。
@@ -52,28 +57,36 @@ export type BookStatus = keyof typeof STATUS_LABEL;
 // user_booksテーブルとbooksテーブルの必要な項目だけを受け取るようにして、
 // DBの行をそのまま渡さなくても使えるようにしている。
 type BookCardProps = {
-    // 詳細ページ(/books/<id>)へのリンクに使うID。
-    // booksテーブルのidではなくuser_booksテーブルのidである点に注意
-    // （「誰の本棚の、どの登録か」を指すのはuser_books側のidのため）。
-    userBookId: string;
+    // カードを押したときの飛び先。
+    //   登録済みの本 … `/books/<user_booksのid>`（詳細ページ）
+    //                  ※ booksテーブルのidではなくuser_booksテーブルのid。
+    //                    「誰の本棚の、どの登録か」を指すのはuser_books側のため
+    //   検索結果     … `/books/add?...`（登録確認ページ）
+    href: string;
     title: string;
     author: string | null;
     publishedDate: string | null;
     thumbnailUrl: string | null;
-    status: BookStatus;
     // カードが光るアニメーションのタイミングをずらすための連番。
     // 一覧の中での並び順(0,1,2,...)をそのまま渡す。
     index: number;
+    // 右上に出すバッジ。どちらか一方だけを渡す想定。
+    //   status      … 登録済みの本の読書ステータス（読みたい/読書中/読了）
+    //   actionLabel … 未登録の本に出す操作ラベル（例:「＋ 本棚に追加」）
+    // ?を付けた項目は「渡さなくてもよい」という意味になる。
+    status?: BookStatus;
+    actionLabel?: string;
 };
 
 export default function BookCard({
-    userBookId,
+    href,
     title,
     author,
     publishedDate,
     thumbnailUrl,
-    status,
     index,
+    status,
+    actionLabel,
 }: BookCardProps) {
     return (
         // カード全体が<a>（＝詳細ページへのリンク）になっている。
@@ -86,7 +99,7 @@ export default function BookCard({
         //                     一覧側の隙間がgap-5(=20px)なので、
         //                     50%から隙間の半分(10px)を引くとちょうど2列になる。
         <Link
-            href={`/books/${userBookId}`}
+            href={href}
             className="ice-card ice-card--book w-full lg:w-[calc(50%-10px)]"
             // カードごとに光るタイミングをずらす(0s, 1s, 2s, ... を6枚ごとに繰り返す)。
             // 1周が6秒(globals.cssのice-card-shine)なので、6枚で1秒ずつずらすと
@@ -119,11 +132,19 @@ export default function BookCard({
 
             {/* --- 右: ステータス + 書誌情報 ------------------------------- */}
             <div className="ice-book-body">
-                <span
-                    className={`ice-status-pill ice-status-pill--${status} self-start`}
-                >
-                    {STATUS_LABEL[status]}
-                </span>
+                {/* 登録済みの本はステータスバッジ、検索結果は操作ラベルを出す。
+                    && は「左が真なら右を表示する」という書き方で、
+                    statusが渡されていない場合は何も描画されない。 */}
+                {status && (
+                    <span
+                        className={`ice-status-pill ice-status-pill--${status} self-start`}
+                    >
+                        {STATUS_LABEL[status]}
+                    </span>
+                )}
+                {actionLabel && (
+                    <span className="ice-action-pill self-start">{actionLabel}</span>
+                )}
 
                 <div className="ice-book-info">
                     <p className="ice-card-title">{title}</p>

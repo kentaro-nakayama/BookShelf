@@ -17,11 +17,9 @@
 // ----------------------------------------------------------------------------
 // searchBooks: lib/books/search.ts の、楽天→Googleフォールバック検索関数
 import { searchBooks } from "@/lib/books/search";
-import Image from "next/image";
-import Link from "next/link";
-// CSSProperties: styleプロパティに独自CSS変数(--ice-shine-delay)を
-// 渡すための型（app/page.tsxと同じ理由）。
-import type { CSSProperties } from "react";
+// BookCard: 本1冊分のカード表示部品。ホーム・本棚一覧と同じものを使い、
+// 画面ごとに見た目がばらつかないようにしている。
+import BookCard from "@/components/book-card";
 
 export default async function SearchPage({searchParams}: PageProps<"/books/search">) {
     const params = await searchParams;
@@ -61,31 +59,13 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
                 )}
                 { !searchFailed && query && searchResult.length === 0 && <p>見つかりませんでした</p>}
                 { searchResult.map((book, index) => (
-                    <div
-                        className="ice-card w-full sm:w-[270px]"
+                    // ホーム・本棚一覧と同じ<BookCard>を使う。
+                    // 違いは2点だけで、どちらもプロパティで指定している。
+                    //   href        … 詳細ページではなく登録確認ページ(/books/add)へ
+                    //   actionLabel … 未登録なので読書ステータスの代わりに操作ラベルを出す
+                    <BookCard
                         key={book.externalId}
-                        // カードごとに光るタイミングをずらす(0s, 0.5s, 1s, ... を6枚ごとに繰り返す)
-                        style={{ "--ice-shine-delay": `${(index % 6) * 0.5}s` } as CSSProperties}
-                    >
-                        <div className="ice-cover">
-                            {book.thumbnailUrl ? (
-                                <Image
-                                    src={book.thumbnailUrl}
-                                    alt={book.title}
-                                    fill
-                                    sizes="(max-width: 640px) 100vw, 270px"
-                                    style={{ objectFit: "cover" }}
-                                />
-                            ) : (
-                                <span className="text-4xl font-bold opacity-50">
-                                    {book.title.slice(0, 1)}
-                                </span>
-                            )}
-                        </div>
-                        <p className="ice-card-title">{book.title}</p>
-                        <p className="ice-card-author">{book.author}</p>
-                        <p className="ice-card-meta">{book.publishedDate}</p>
-                        <Link href={`/books/add?${new URLSearchParams({
+                        href={`/books/add?${new URLSearchParams({
                             externalSource: book.externalSource,
                             externalId: book.externalId,
                             title: book.title,
@@ -94,11 +74,14 @@ export default async function SearchPage({searchParams}: PageProps<"/books/searc
                             publishedDate: book.publishedDate ?? "",
                             thumbnailUrl: book.thumbnailUrl ?? "",
                             isbn: book.isbn ?? "",
-                        }).toString()}`} className="ice-button mt-auto">
-                            本棚に追加
-                        </Link>
-                    </div>
-
+                        }).toString()}`}
+                        title={book.title}
+                        author={book.author}
+                        publishedDate={book.publishedDate}
+                        thumbnailUrl={book.thumbnailUrl}
+                        actionLabel="＋ 本棚に追加"
+                        index={index}
+                    />
                 )) }
             </div>
         </div>

@@ -212,7 +212,7 @@ export default async function BooksPage({ searchParams }: PageProps<"/books">) {
                     {myBooks.map((myBook, index) => (
                         <BookCard
                             key={myBook.id}
-                            userBookId={myBook.id}
+                            href={`/books/${myBook.id}`}
                             title={myBook.book.title}
                             author={myBook.book.author}
                             publishedDate={myBook.book.published_date}

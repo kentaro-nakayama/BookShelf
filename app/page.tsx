@@ -172,7 +172,7 @@ export default async function Home() {
                         {readingBooks.map((myBook, index) => (
                             <BookCard
                                 key={myBook.id}
-                                userBookId={myBook.id}
+                                href={`/books/${myBook.id}`}
                                 title={myBook.book.title}
                                 author={myBook.book.author}
                                 publishedDate={myBook.book.published_date}
@@ -204,7 +204,7 @@ export default async function Home() {
                     {recentBooks.map((myBook, index) => (
                         <BookCard
                             key={myBook.id}
-                            userBookId={myBook.id}
+                            href={`/books/${myBook.id}`}
                             title={myBook.book.title}
                             author={myBook.book.author}
                             publishedDate={myBook.book.published_date}

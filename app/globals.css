@@ -1069,11 +1069,24 @@ a.ice-status-pill:hover {
     overflow-wrap: anywhere;
 }
 
-/* 著者名は1行で省略する */
+/* 著者名は1行で省略する。
+   タイトルと同じ -webkit-box 方式(行数で打ち切り)を使い、
+   white-space: nowrap は使わない。
+   理由: nowrapを指定すると「この要素は最低でも文字列全体の幅が必要」と
+   ブラウザに伝わってしまう。親に overflow:hidden を付けていても、この
+   「必要な幅」の申告だけは祖先に伝わり続けるため、著者名の長い本
+   （例「NRIネットコム株式会社/小林 恭平/坂本 陽/佐々木 拓郎」）があると
+   ページ全体が画面幅より広くなり、横スクロールが発生していた
+   （要件定義書8章の「横スクロールが発生しないレイアウト」に反する）。
+   行数での打ち切りなら、文字は途中で折り返せる前提のままなので
+   「必要な幅」が膨らまず、見た目は同じく1行＋「...」になる。 */
 .ice-card--book .ice-card-author {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
 }
 
 /* 出版日は常に枠の一番下に寄せる */
@@ -1136,4 +1149,31 @@ a.ice-status-pill:hover {
     .ice-card--book .ice-card-meta {
         font-size: 11px;
     }
+}
+
+/* ----------------------------------------------------------------------------
+ * .ice-action-pill ― 未登録の本(検索結果)のカードに出す操作ラベル
+ * -------------------------------------------------------------------------- */
+/* 登録済みの本は右上に読書ステータスのバッジ(.ice-status-pill)が出るが、
+   検索結果の本にはまだステータスがない。代わりに「＋ 本棚に追加」という
+   操作ラベルをここに出して、カードを押すと何が起きるかを伝える。
+   .ice-button と同じ白〜水色にして「押せるもの」だと分かるようにしているが、
+   実際に押せるのはカード全体なので、これ自体はボタンではない。 */
+.ice-action-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: linear-gradient(160deg, #ffffff 0%, #d9f1ff 100%);
+    color: #0c2742;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    /* 枠線は見た目には影響しない(背景と同じ白)が、
+       .ice-status-pill が1pxの枠線を持っているため、こちらにも同じ厚みを
+       付けておかないとバッジの高さが2pxずれ、登録済みの本と検索結果とで
+       カード内の位置が微妙に食い違う。 */
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    /* ラベルが2行に折り返してカードの高さ配分が崩れないようにする */
+    white-space: nowrap;
 }
