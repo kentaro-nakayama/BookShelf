@@ -1481,6 +1481,9 @@ a.ice-status-pill:hover {
     z-index: 0;
     /* 背景の飾りなので、クリックを邪魔しないようにする */
     pointer-events: none;
+    /* 画面端に置いた星や星座が画面幅を押し広げて横スクロールを
+       起こさないよう、この枠で切り取る（要件定義書8章） */
+    overflow: hidden;
     background-image:
         radial-gradient(2.7px 2.7px at 12% 8%, rgba(255,255,255,0.95), transparent 60%),
         radial-gradient(2.0px 2.0px at 27% 16%, rgba(214,240,255,0.8), transparent 60%),
@@ -1627,4 +1630,134 @@ a.ice-status-pill:hover {
     z-index: 1;
     /* bodyのflex配置の中で、中身が縦に伸びるようにする */
     flex: 1;
+}
+
+/* ============================================================================
+ * 星座 (.ice-constellation / app/layout.tsx)
+ * ----------------------------------------------------------------------------
+ * 背景の星の一部を、実在の星座の形に並べたもの。線は引いていないので、
+ * 気づいた人だけが分かるさりげない仕掛けになっている。
+ *
+ * なぜ星座だけ「箱」に入れるのか:
+ *   他の星は left:33% のように画面幅・画面高さに対する割合で置いている。
+ *   この方式だと画面の縦横比がそのまま形に効いてしまい、同じ座標でも
+ *   iPhone(390x844)では縦に約2.2倍、デスクトップ(1440x900)では横に約1.6倍
+ *   引き伸ばされる。端末間で3倍以上形が変わるので、ひしゃくが縦長になったり
+ *   横に潰れたりしてしまう。
+ *   そこで星座ごとに「縦横比を固定した箱」を1つ置き、星はその箱の中での
+ *   割合で配置する。箱の位置自体は画面に対する割合なので、
+ *   「置かれる場所は画面に合わせて動くが、形は崩れない」という状態になる。
+ *
+ * 星の位置は実際の赤経・赤緯から起こしている。
+ * 赤経はそのまま使うと横に広がりすぎるため、cos(赤緯)を掛けて
+ * 見かけの間隔に補正してある。
+ * 星の大きさは実際の等級に対応させていて、明るい星ほど大きく濃い。
+ * ========================================================================= */
+.ice-constellation {
+    position: absolute;
+    left: var(--con-x);
+    top: var(--con-y);
+    width: var(--con-width);
+    /* 狭い画面でも画面幅からはみ出さないようにする。
+       aspect-ratio を使っているので、幅が縮んでも高さが追従し形は保たれる。 */
+    max-width: 62vw;
+    aspect-ratio: var(--con-aspect);
+    /* 周りの星がまたたいている中で完全に静止していると貼り付けたように
+       見えるので、ごく弱く明るさを揺らす（0.82〜1なのでほとんど気づかない）。 */
+    animation: ice-constellation-breathe 6.5s ease-in-out infinite;
+}
+
+/* 北斗七星（おおぐま座の一部）。ひしゃくの器4つ＋柄3つ。 */
+.ice-constellation--dipper {
+    --con-x: 8%;
+    --con-y: 16%;
+    --con-width: 230px;
+    --con-aspect: 1.88;
+    background-image:
+        radial-gradient(3.3px 3.3px at 6.0% 5.0%, rgba(255,238,215,0.95), transparent 60%)  /* Dubhe 1.79等 */,
+        radial-gradient(2.8px 2.8px at 5.0% 43.8%, rgba(255,255,255,0.92), transparent 60%)  /* Merak 2.37等 */,
+        radial-gradient(2.7px 2.7px at 33.2% 63.3%, rgba(255,255,255,0.9), transparent 60%)  /* Phecda 2.44等 */,
+        radial-gradient(1.9px 1.9px at 45.0% 39.1%, rgba(226,242,255,0.73), transparent 60%)  /* Megrez 3.31等 */,
+        radial-gradient(3.3px 3.3px at 65.9% 46.9%, rgba(255,255,255,0.95), transparent 60%)  /* Alioth 1.77等 */,
+        radial-gradient(2.9px 2.9px at 82.2% 54.4%, rgba(255,255,255,0.94), transparent 60%)  /* Mizar 2.23等 */,
+        radial-gradient(3.2px 3.2px at 95.0% 95.0%, rgba(226,242,255,0.95), transparent 60%)  /* Alkaid 1.86等 */;
+}
+
+/* カシオペヤ座。Wの形に並ぶ5つ。 */
+.ice-constellation--cassiopeia {
+    --con-x: 46%;
+    --con-y: 68%;
+    --con-width: 170px;
+    --con-aspect: 1.84;
+    background-image:
+        radial-gradient(2.9px 2.9px at 5.0% 62.0%, rgba(255,255,255,0.93), transparent 60%)  /* Caph 2.28等 */,
+        radial-gradient(2.9px 2.9px at 31.8% 95.0%, rgba(255,238,215,0.94), transparent 60%)  /* Schedar 2.24等 */,
+        radial-gradient(2.7px 2.7px at 45.6% 42.3%, rgba(226,242,255,0.9), transparent 60%)  /* Gamma 2.47等 */,
+        radial-gradient(2.5px 2.5px at 70.5% 48.3%, rgba(255,255,255,0.85), transparent 60%)  /* Ruchbah 2.68等 */,
+        radial-gradient(1.8px 1.8px at 95.0% 5.0%, rgba(226,242,255,0.71), transparent 60%)  /* Segin 3.38等 */;
+}
+
+@keyframes ice-constellation-breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.82; }
+}
+
+/* さそり座。頭(はさみ)から胴体が垂れ下がり、尾が右へ流れて毒針で跳ね上がる。
+   星が15個と多く、曲線が特徴なので他の2つより少し大きめに置いている。
+   縦横比がほぼ1:1（0.97）なので、画面中央に置いても偏って見えない。
+   アンタレス(1.06等)は赤色超巨星。実際に赤く見えるので色も赤寄りにし、
+   この星空で一番大きい点にしている。 */
+.ice-constellation--scorpius {
+    --con-x: 50%;
+    --con-y: 50%;
+    --con-width: 185px;
+    /* 星が15個と多いぶん、狭い画面では他より小さめに抑える */
+    max-width: 50vw;
+    --con-aspect: 0.97;
+    /* 他の2つは左上を基準に置いているが、これは「画面の中央」に
+       置きたいので、指定した点が箱の中心に来るようずらす。 */
+    transform: translate(-50%, -50%);
+    background-image:
+        radial-gradient(2.6px 2.6px at 10.4% 5.0%, rgba(226,242,255,0.88), transparent 60%)  /* Beta 2.56等 */,
+        radial-gradient(2.8px 2.8px at 6.2% 15.8%, rgba(226,242,255,0.93), transparent 60%)  /* Delta 2.29等 */,
+        radial-gradient(2.3px 2.3px at 5.0% 29.2%, rgba(226,242,255,0.81), transparent 60%)  /* Pi 2.89等 */,
+        radial-gradient(2.3px 2.3px at 23.5% 27.2%, rgba(226,242,255,0.81), transparent 60%)  /* Sigma 2.88等 */,
+        radial-gradient(4.0px 4.0px at 30.3% 30.5%, rgba(255,196,160,0.95), transparent 60%)  /* Antares 1.06等 */,
+        radial-gradient(2.3px 2.3px at 35.6% 37.3%, rgba(226,242,255,0.83), transparent 60%)  /* Tau 2.82等 */,
+        radial-gradient(2.8px 2.8px at 47.5% 60.6%, rgba(255,238,215,0.93), transparent 60%)  /* Epsilon 2.29等 */,
+        radial-gradient(2.2px 2.2px at 49.0% 75.1%, rgba(226,242,255,0.79), transparent 60%)  /* Mu 3.0等 */,
+        radial-gradient(1.6px 1.6px at 51.1% 91.6%, rgba(255,238,215,0.67), transparent 60%)  /* Zeta 3.62等 */,
+        radial-gradient(1.9px 1.9px at 65.7% 95.0%, rgba(255,255,255,0.72), transparent 60%)  /* Eta 3.33等 */,
+        radial-gradient(3.2px 3.2px at 86.5% 94.1%, rgba(255,255,255,0.95), transparent 60%)  /* Theta 1.86等 */,
+        radial-gradient(2.1px 2.1px at 95.0% 83.0%, rgba(255,255,255,0.78), transparent 60%)  /* Iota 3.03等 */,
+        radial-gradient(2.7px 2.7px at 90.8% 78.8%, rgba(226,242,255,0.91), transparent 60%)  /* Kappa 2.41等 */,
+        radial-gradient(3.5px 3.5px at 83.4% 71.4%, rgba(226,242,255,0.95), transparent 60%)  /* Lambda 1.62等 */,
+        radial-gradient(2.5px 2.5px at 81.1% 72.2%, rgba(226,242,255,0.85), transparent 60%)  /* Upsilon 2.69等 */;
+}
+
+/* 星座の線。
+   星チャートのように星同士を結ぶ。主役は星なので、線は控えめにする。
+   vector-effect: non-scaling-stroke …
+     通常、SVGを拡大すると線も一緒に太くなる。この指定をしておくと
+     箱の大きさ(画面幅で変わる)に関係なく線の太さが一定に保たれ、
+     狭い画面で線だけ目立ってしまうことがない。
+   線は .ice-constellation の中にあるので、星と一緒に明るさが揺れる。 */
+.ice-constellation-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: rgba(190, 225, 255, 0.3);
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+/* さそり座は星が15個と密なので、線が目立ちすぎないよう他より細くする。
+   0.7pxという1px未満の指定は、画面の画素の境目をまたいで薄く描かれるため、
+   1pxより細く繊細な線に見える。 */
+.ice-constellation--scorpius .ice-constellation-lines {
+    stroke-width: 0.7;
 }

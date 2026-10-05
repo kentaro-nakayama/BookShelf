@@ -73,6 +73,54 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                         分ける必要があるため（globals.cssの.ice-sparkle参照）。
                         見た目の計算はCSS側がやるので、ここで渡すのは
                         位置・大きさ・色・光り始めるタイミングの4つだけ。 */}
+                    {/* 星座（線は引かない）。実在の星の配置を再現している。
+                        形が崩れないよう、星座ごとに縦横比を固定した箱に
+                        入れている（globals.cssの.ice-constellation参照）。 */}
+                    <span className="ice-constellation ice-constellation--dipper">
+                        {/* 星をつなぐ線。角度が自由なのでCSSではなくSVGで描く。
+                            viewBoxの横幅は箱の縦横比に合わせてあるので、
+                            縦横が均等に拡大され線の太さが歪まない。
+                            座標は globals.css の .ice-constellation--dipper に書いた
+                            星の位置(%)に対応している。片方だけ動かすとずれるので注意。 */}
+                        <svg
+                            className="ice-constellation-lines"
+                            viewBox="0 0 188.0 100"
+                            aria-hidden="true"
+                        >
+                            {/* Dubhe - Merak - Phecda - Megrez - Dubhe */}
+                            <polyline points="11.3,5.0 9.4,43.8 62.4,63.3 84.6,39.1 11.3,5.0" />
+                            {/* Megrez - Alioth - Mizar - Alkaid */}
+                            <polyline points="84.6,39.1 123.9,46.9 154.5,54.4 178.6,95.0" />
+                        </svg>
+                    </span>
+                    <span className="ice-constellation ice-constellation--scorpius">
+                        <svg
+                            className="ice-constellation-lines"
+                            viewBox="0 0 97.0 100"
+                            aria-hidden="true"
+                        >
+                            {/* Beta - Delta - Pi */}
+                            <polyline points="10.1,5.0 6.0,15.8 4.8,29.2" />
+                            {/* Delta - Sigma - Antares - Tau - Epsilon - Mu - Zeta - Eta - Theta - Iota - Kappa - Lambda - Upsilon */}
+                            <polyline points="6.0,15.8 22.8,27.2 29.4,30.5 34.5,37.3 46.1,60.6 47.5,75.1 49.6,91.6 63.7,95.0 83.9,94.1 92.1,83.0 88.1,78.8 80.9,71.4 78.7,72.2" />
+                        </svg>
+                    </span>
+                    <span className="ice-constellation ice-constellation--cassiopeia">
+                        {/* 星をつなぐ線。角度が自由なのでCSSではなくSVGで描く。
+                            viewBoxの横幅は箱の縦横比に合わせてあるので、
+                            縦横が均等に拡大され線の太さが歪まない。
+                            座標は globals.css の .ice-constellation--cassiopeia に書いた
+                            星の位置(%)に対応している。片方だけ動かすとずれるので注意。 */}
+                        <svg
+                            className="ice-constellation-lines"
+                            viewBox="0 0 184.0 100"
+                            aria-hidden="true"
+                        >
+                            {/* Caph - Schedar - Gamma - Ruchbah - Segin */}
+                            <polyline points="9.2,62.0 58.5,95.0 83.9,42.3 129.7,48.3 174.8,5.0" />
+                        </svg>
+                    </span>
+
                     {SPARKLE_STARS.map((star, index) => (
                         <span
                             key={index}
