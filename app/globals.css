@@ -168,14 +168,12 @@ html {
 body {
     position: relative;
     color: var(--ice-text);
+    /* 星はここには書かず、.ice-starfield（下部で定義）に分けている。
+       星をきらめかせる＝不透明度を動かす必要があり、body本体の不透明度を
+       動かすと画面の中身まで一緒に明滅してしまうため。 */
     background:
         radial-gradient(circle at 18% 18%, rgba(70, 135, 225, 0.5), transparent 42%),
         radial-gradient(circle at 80% 78%, rgba(130, 85, 225, 0.45), transparent 48%),
-        radial-gradient(1.4px 1.4px at 10% 20%, rgba(255, 255, 255, 0.9), transparent 60%),
-        radial-gradient(1px 1px at 70% 15%, rgba(255, 255, 255, 0.7), transparent 60%),
-        radial-gradient(1.6px 1.6px at 40% 65%, rgba(255, 255, 255, 0.8), transparent 60%),
-        radial-gradient(1px 1px at 85% 55%, rgba(255, 255, 255, 0.6), transparent 60%),
-        radial-gradient(1.4px 1.4px at 25% 85%, rgba(255, 255, 255, 0.7), transparent 60%),
         linear-gradient(165deg, #05070f 0%, #0a0f1e 50%, #121729 100%);
     background-attachment: fixed;
     background-size: cover;
@@ -1440,4 +1438,193 @@ a.ice-status-pill:hover {
     background: rgba(5, 7, 15, 0.72);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
+}
+
+/* ============================================================================
+ * 夜空の星 (.ice-starfield / app/layout.tsx)
+ * ----------------------------------------------------------------------------
+ * 画面全体に固定した星空のレイヤー。3層に分けている。
+ *
+ *   .ice-starfield          … 常に光っている星 34個（動かない。星空の土台）
+ *   .ice-starfield::before  … ゆっくりきらめく星 18個
+ *   .ice-sparkle(3組)       … キラッと輝く星 15個
+ *   合計67個
+ *
+ * なぜ3層に分けるのか:
+ *   きらめきは「その層の不透明度を上下させる」ことで作っている。
+ *   1層だと全部の星が同時に明滅して、点滅する電飾のように見えてしまう。
+ *   層ごとに周期をずらすと、星によって光り方が違って見え、自然になる。
+ *   実際の夜空も、またたく星とそうでない星が混ざっている。
+ *
+ * なぜ位置をpx指定ではなく%指定にするのか:
+ *   %なら画面サイズが変わっても星が画面全体に散らばったままになる。
+ *   スマホでも端に寄らない（要件定義書3.1のスマホ優先の方針）。
+ *
+ * 1つの星 = radial-gradient(<横幅> <高さ> at <X> <Y>, <中心の色>, transparent 60%)
+ *   サイズは1.9〜3.7pxの範囲で散らしている（大きいほど目立つ星になる）。
+ *   transparent 60% で外側に向けてぼかし、光っているように見せる。
+ *   全体の大きさを変えたいときは、この48個の数値をまとめて倍率で
+ *   掛け直す（位置の%はそのままでよい）。
+ * ========================================================================= */
+.ice-starfield {
+    /* position:fixed … スクロールしても星は動かない（奥にある夜空のため） */
+    position: fixed;
+    inset: 0;
+    /* z-index は 0。当初 -1 にしていたが、それだと星が見えなかった。
+       理由: bodyは position:relative なので「位置指定された要素」として扱われ、
+       z-index が負の子要素よりも後（手前）に描画される。
+       bodyには濃紺のグラデーション背景があるため、星がその背景に
+       完全に覆い隠されていた。
+       0 にすると body の背景より手前に描かれて星が見えるようになる。
+       代わりに画面の中身より手前に来てしまうので、
+       中身の側(.ice-content)に z-index:1 を与えて星より上に出している。 */
+    z-index: 0;
+    /* 背景の飾りなので、クリックを邪魔しないようにする */
+    pointer-events: none;
+    background-image:
+        radial-gradient(2.7px 2.7px at 12% 8%, rgba(255,255,255,0.95), transparent 60%),
+        radial-gradient(2.0px 2.0px at 27% 16%, rgba(214,240,255,0.8), transparent 60%),
+        radial-gradient(3.1px 3.1px at 44% 6%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1.9px 1.9px at 61% 13%, rgba(214,240,255,0.75), transparent 60%),
+        radial-gradient(2.5px 2.5px at 78% 9%, rgba(255,255,255,0.85), transparent 60%),
+        radial-gradient(2.0px 2.0px at 91% 19%, rgba(255,245,220,0.8), transparent 60%),
+        radial-gradient(2.2px 2.2px at 7% 31%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(2.9px 2.9px at 34% 29%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1.9px 1.9px at 55% 35%, rgba(214,240,255,0.7), transparent 60%),
+        radial-gradient(2.4px 2.4px at 72% 27%, rgba(255,255,255,0.85), transparent 60%),
+        radial-gradient(2.0px 2.0px at 88% 38%, rgba(255,255,255,0.75), transparent 60%),
+        radial-gradient(2.5px 2.5px at 17% 47%, rgba(255,245,220,0.85), transparent 60%),
+        radial-gradient(1.9px 1.9px at 40% 52%, rgba(214,240,255,0.7), transparent 60%),
+        radial-gradient(2.7px 2.7px at 66% 48%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(2.0px 2.0px at 84% 56%, rgba(255,255,255,0.75), transparent 60%),
+        radial-gradient(2.4px 2.4px at 9% 63%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(2.9px 2.9px at 30% 71%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1.9px 1.9px at 52% 67%, rgba(214,240,255,0.7), transparent 60%),
+        radial-gradient(2.2px 2.2px at 75% 74%, rgba(255,245,220,0.8), transparent 60%),
+        radial-gradient(2.5px 2.5px at 94% 69%, rgba(255,255,255,0.85), transparent 60%),
+        radial-gradient(2.0px 2.0px at 21% 84%, rgba(255,255,255,0.75), transparent 60%),
+        radial-gradient(2.7px 2.7px at 46% 88%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1.9px 1.9px at 68% 92%, rgba(214,240,255,0.7), transparent 60%),
+        radial-gradient(2.4px 2.4px at 86% 85%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(2.2px 2.2px at 89% 51%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(2.9px 2.9px at 62% 70%, rgba(255,245,220,0.8), transparent 60%),
+        radial-gradient(2.7px 2.7px at 13% 25%, rgba(255,245,220,0.8), transparent 60%),
+        radial-gradient(2.0px 2.0px at 19% 72%, rgba(214,240,255,0.75), transparent 60%),
+        radial-gradient(2.7px 2.7px at 20% 29%, rgba(214,240,255,0.75), transparent 60%),
+        radial-gradient(1.9px 1.9px at 39% 24%, rgba(255,255,255,0.75), transparent 60%),
+        radial-gradient(2.5px 2.5px at 51% 50%, rgba(214,240,255,0.7), transparent 60%),
+        radial-gradient(2.2px 2.2px at 62% 26%, rgba(214,240,255,0.75), transparent 60%),
+        radial-gradient(3.1px 3.1px at 91% 91%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(1.9px 1.9px at 50% 76%, rgba(255,255,255,0.8), transparent 60%);
+}
+
+/* ゆっくりきらめく星（周期4.5秒） */
+.ice-starfield::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(3.4px 3.4px at 20% 12%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.7px 2.7px at 52% 21%, rgba(224,244,255,0.95), transparent 60%),
+        radial-gradient(3.7px 3.7px at 83% 15%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.9px 2.9px at 14% 40%, rgba(255,248,230,0.95), transparent 60%),
+        radial-gradient(3.4px 3.4px at 47% 44%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.7px 2.7px at 79% 36%, rgba(224,244,255,0.9), transparent 60%),
+        radial-gradient(3.6px 3.6px at 25% 59%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.9px 2.9px at 60% 62%, rgba(255,248,230,0.95), transparent 60%),
+        radial-gradient(3.4px 3.4px at 90% 60%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.7px 2.7px at 11% 78%, rgba(224,244,255,0.9), transparent 60%),
+        radial-gradient(3.7px 3.7px at 38% 80%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(2.9px 2.9px at 73% 83%, rgba(255,248,230,0.95), transparent 60%),
+        radial-gradient(3.4px 3.4px at 57% 95%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(3.6px 3.6px at 45% 58%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(3.6px 3.6px at 4% 13%, rgba(255,255,255,1), transparent 60%),
+        radial-gradient(3.7px 3.7px at 33% 49%, rgba(224,244,255,0.95), transparent 60%),
+        radial-gradient(3.6px 3.6px at 48% 14%, rgba(224,244,255,0.95), transparent 60%),
+        radial-gradient(2.7px 2.7px at 96% 48%, rgba(255,248,230,0.95), transparent 60%);
+    animation: ice-star-twinkle 4.5s ease-in-out infinite;
+}
+
+/* 速くきらめく星（キラッと輝く層）
+ * ----------------------------------------------------------------------
+ * 他の2層と違い、星1つにつき1つの<span>を置いている（app/layout.tsx参照）。
+ * 理由: 光条を「その場で回転させる」ため。
+ *   層を1枚にまとめて回転させると、回転の中心が画面の中心になってしまい、
+ *   星そのものが画面上をぐるぐる動いてしまう。星ごとに要素を分ければ、
+ *   それぞれが自分の位置を中心に回る。
+ *
+ * 1つの星は3つのグラデーションを重ねて描く。
+ *   1つ目 … 丸い芯
+ *   2つ目 … 横に伸びる細い光条（横長の楕円グラデーション）
+ *   3つ目 … 縦に伸びる細い光条
+ *
+ * 大きさはすべて --sparkle-size からの比率で計算しているので、
+ * 星ごとに指定するのは「位置・大きさ・色・光り始めるタイミング」の4つだけ。
+ *   芯の直径   = size / 10
+ *   光条の長さ = size / 2   （要素の端まで）
+ *   光条の太さ = size / 45
+ * 要素を光条の長さの2倍の正方形にしてあるので、回転しても光条が
+ * 要素からはみ出して切れることがない。 */
+.ice-sparkle {
+    position: absolute;
+    left: var(--sparkle-x);
+    top: var(--sparkle-y);
+    width: var(--sparkle-size);
+    height: var(--sparkle-size);
+    /* left/top で指定した点が要素の中心に来るようにずらす。
+       この translate はアニメーション側のtransformにも必ず書くこと
+       （書き忘れると光るたびに位置がずれる）。 */
+    transform: translate(-50%, -50%);
+    background-image:
+        radial-gradient(calc(var(--sparkle-size) / 10) calc(var(--sparkle-size) / 10) at 50% 50%,
+            var(--sparkle-color), transparent 60%),
+        radial-gradient(calc(var(--sparkle-size) / 2) calc(var(--sparkle-size) / 45) at 50% 50%,
+            var(--sparkle-color), transparent 70%),
+        radial-gradient(calc(var(--sparkle-size) / 45) calc(var(--sparkle-size) / 2) at 50% 50%,
+            var(--sparkle-color), transparent 70%);
+    animation: ice-star-sparkle 2.8s ease-in-out infinite;
+    animation-delay: var(--sparkle-delay);
+}
+
+/* キラッとした光り方。
+   以前は一瞬で最大→最小に戻していたため「点滅」に見えていたので、
+   明るい時間を1周の約2割（40%〜60%）まで広げ、前後もなだらかにした。
+   回転は0度から90度まで。光条は十字（90度ごとに同じ形）なので、
+   1周して90度回ったところで見た目が元に戻り、継ぎ目なくつながる。
+   回転量は明るい区間に集中させてあり、暗い間はほとんど動かない。 */
+@keyframes ice-star-sparkle {
+    0%   { opacity: 0.08; transform: translate(-50%, -50%) rotate(0deg); }
+    25%  { opacity: 0.12; transform: translate(-50%, -50%) rotate(6deg); }
+    40%  { opacity: 0.85; transform: translate(-50%, -50%) rotate(25deg); }
+    50%  { opacity: 1;    transform: translate(-50%, -50%) rotate(45deg); }
+    60%  { opacity: 0.85; transform: translate(-50%, -50%) rotate(65deg); }
+    75%  { opacity: 0.12; transform: translate(-50%, -50%) rotate(84deg); }
+    100% { opacity: 0.08; transform: translate(-50%, -50%) rotate(90deg); }
+}
+
+/* きらめき。完全に消すと「星が無くなった」ように見えるので、
+   暗いときでも0.35は残して「弱く光っている」状態にしている。 */
+@keyframes ice-star-twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+/* OS側で「視差効果を減らす」を有効にしている人には明滅を止める。
+   星は消えず、中間の明るさで出したままにする。 */
+@media (prefers-reduced-motion: reduce) {
+    .ice-starfield::before,
+    .ice-sparkle {
+        animation: none;
+        opacity: 0.7;
+    }
+}
+
+/* ページの中身。星(.ice-starfield)より手前に出すためのラッパー。
+   ヘッダー(sticky, z-index:10)・下部タブバー(fixed, z-index:20)・
+   送信中のローディング(z-index:50)は元から星より手前なので指定不要。 */
+.ice-content {
+    position: relative;
+    z-index: 1;
+    /* bodyのflex配置の中で、中身が縦に伸びるようにする */
+    flex: 1;
 }
