@@ -7,7 +7,24 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+  /* 本文・見出しのフォント。
+     並び順に意味がある: 欧文のCormorant Garamondには日本語のグリフが無いので、
+     かな・漢字は自動的に次のZen Old Minchoへ送られる。
+     この1行だけで「英数字は欧文明朝、日本語は和文明朝」の振り分けが成立する。
+     逆順にするとZen Old Minchoが持つ欧文グリフが先に当たってしまい、
+     英数字までそちらで描かれるので、順番は入れ替えないこと。
+
+     値がフォント名ではなくCSS変数なのは、next/fontが実際に定義する
+     ファミリ名が "__Cormorant_Garamond_xxxxxx" のようなハッシュ付きの名前で、
+     こちらから直接書けないため。変数の中身はapp/layout.tsxが入れている。
+
+     トークン名が --font-sans のままなのは、Tailwind/shadcnが
+     font-sans ユーティリティと対応させている名前で、変えると
+     shadcnの各コンポーネントが参照している font-sans が外れてしまうため。
+     中身はサンセリフではなく明朝だが、ここは「本文の既定フォント」の意味で
+     読んでほしい。 */
+  --font-sans: var(--font-cormorant-garamond), var(--font-zen-old-mincho), ui-serif, serif;
+  /* 等幅はコード表示用なので明朝にはしない */
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -520,8 +537,25 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    /* 行の高さを36pxに固定している。
+       ヘッダーの高さは、中に入っている要素のうち一番高いもので決まる。
+       ロゴの行ボックス(36px)がログインボタン(33.5px)より高いので、
+       ロゴが高さを決めている側。行の高さを決め打ちしておけば、
+       文字サイズを変えてもヘッダーの高さは動かない。
+       36pxは文字サイズ24px時の計算値で、見た目を変えずに文字だけ
+       大きくするためにその値をそのまま固定した。 */
+    line-height: 36px;
+    /* Cormorant Garamondの可変フォントはウェイト軸が300〜700なので、
+       700がこのフォントで出せる一番太い状態。800や900を書いても
+       700に丸められるだけで、それ以上は太くならない。 */
+    font-weight: 500;
+    /* 上記のとおりウェイトでは太くできないので、文字の輪郭を
+       currentColorで縁取りして線を太らせている。
+       0.5pxは輪郭線の太さで、内外に0.25pxずつ乗る。
+       大きくするとカウンター(文字の内側の空き)が埋まって
+       つぶれて見えるので、控えめな値にしてある。 */
+    -webkit-text-stroke: 0.5px currentColor;
     color: var(--ice-text);
     text-decoration: none;
 }
@@ -560,10 +594,6 @@ body {
     .ice-header {
         /* PC用の左右40pxの余白はスマホだと窮屈なので狭くする */
         padding: 12px 16px;
-    }
-
-    .ice-logo {
-        font-size: 24px;
     }
 
     /* カードの中身(表紙・タイトル等)はそのままに、余白だけ少し詰める */

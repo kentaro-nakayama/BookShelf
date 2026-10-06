@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Cormorant_Garamond, Geist_Mono, Zen_Old_Mincho } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/header";
 // CSSProperties: styleに独自のCSS変数(--sparkle-x など)を渡すための型
@@ -26,11 +26,54 @@ const SPARKLE_STARS = [
     { x: "82%", y: "96%", size: "27px", color: "rgba(255,255,255,1)", delay: "-1.9s" },
 ];
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
+// 本文・見出しのフォント。欧文と和文で別々のフォントを読み込み、
+// CSS側で「欧文 → 和文」の順に並べて使い分ける（globals.cssの--font-sans参照）。
+// 1つのフォントで両方を賄うのではなく2つ重ねるのは、
+// Cormorant Garamondに日本語のグリフが無いため。無い文字は次の
+// フォントに送られるので、英数字はCormorant、かなや漢字はZen Old Mincho、
+// という振り分けがfont-familyの並び順だけで成立する。
+
+// 欧文。weightを指定していないのは、このフォントに可変フォント版があり、
+// 省略するとnext/fontがそちらを選ぶため。1ファイルで全ウェイトを賄える。
+//
+// style: "italic" だけを読み込み、立体(normal)は読み込んでいない。
+// これは「欧文だけを斜体にし、日本語は立体のまま残す」ための指定。
+//   CSSには「欧文の部分だけ斜体」と書く手段が無いので、素直に
+//   font-style: italic を全体へ当てると、イタリック体を持たない
+//   Zen Old Minchoがブラウザに機械的に傾けられる（疑似斜体）。
+//   和文の疑似斜体は字形が崩れて読みにくいので避けたい。
+//   そこで font-style は normal のままにしておき、Cormorant側に
+//   イタリックしか用意しないことで斜体にしている。
+//   フォントの選択規則上、font-style: normal が要求されたとき、
+//   そのファミリに立体が無ければイタリックが使われる。
+//   結果、欧文はイタリック・和文は立体になり、
+//   「傾けてくれ」という指示自体が出ないので疑似斜体も起きない。
+const cormorantGaramond = Cormorant_Garamond({
+    variable: "--font-cormorant-garamond",
     subsets: ["latin"],
+    style: "italic",
 });
 
+// 和文。
+// weight: 可変フォント版が無いので、使うウェイトを明示する必要がある。
+//   400は本文、700は見出し(font-bold)用。ウェイトを増やすとその数だけ
+//   フォントファイルが増えるので、実際に使う2つだけにしている。
+// preload: false にしている理由:
+//   next/fontは subsets に挙げたものをpreloadする仕組みだが、
+//   Zen Old Minchoには "japanese" という名前のサブセットが存在しない
+//   （cyrillic/greek/latin/latin-extのみ）。日本語のグリフは、名前の付いた
+//   サブセットではなくunicode-rangeで細かく分割されたファイル群として
+//   配信される。そのため subsets で指定しようがなく、
+//   かわりに preload: false を渡す必要がある（省略するとビルドエラー）。
+//   実用上もこれで正しく、ブラウザがページ内で実際に使われている文字を見て
+//   必要な範囲のファイルだけを読む。全部を先読みすると数MBになってしまう。
+const zenOldMincho = Zen_Old_Mincho({
+    variable: "--font-zen-old-mincho",
+    weight: ["400", "700"],
+    preload: false,
+});
+
+// 等幅フォントはコード表示用なので明朝にはせず、そのまま残している。
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
@@ -60,8 +103,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
     return (
         <html
-            lang="en"
-            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+            lang="ja"
+            className={`${cormorantGaramond.variable} ${zenOldMincho.variable} ${geistMono.variable} h-full antialiased`}
         >
             <body className="min-h-full flex flex-col">
                 {/* 夜空の星。画面に固定された背景の飾りなので、
