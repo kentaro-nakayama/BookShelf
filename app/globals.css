@@ -1690,7 +1690,7 @@ a.ice-status-pill:hover {
 /* カシオペヤ座。Wの形に並ぶ5つ。 */
 .ice-constellation--cassiopeia {
     --con-x: 46%;
-    --con-y: 68%;
+    --con-y: 74%;
     --con-width: 170px;
     --con-aspect: 1.84;
     background-image:
@@ -1708,18 +1708,19 @@ a.ice-status-pill:hover {
 
 /* さそり座。頭(はさみ)から胴体が垂れ下がり、尾が右へ流れて毒針で跳ね上がる。
    星が15個と多く、曲線が特徴なので他の2つより少し大きめに置いている。
-   縦横比がほぼ1:1（0.97）なので、画面中央に置いても偏って見えない。
+   縦横比がほぼ1:1（0.97）なので、どこに置いても偏って見えない。
    アンタレス(1.06等)は赤色超巨星。実際に赤く見えるので色も赤寄りにし、
    この星空で一番大きい点にしている。 */
 .ice-constellation--scorpius {
-    --con-x: 50%;
-    --con-y: 50%;
+    --con-x: 42%;
+    --con-y: 56%;
     --con-width: 185px;
     /* 星が15個と多いぶん、狭い画面では他より小さめに抑える */
     max-width: 50vw;
     --con-aspect: 0.97;
-    /* 他の2つは左上を基準に置いているが、これは「画面の中央」に
-       置きたいので、指定した点が箱の中心に来るようずらす。 */
+    /* 北斗七星とカシオペヤ座は左上を基準に置いているが、これは
+       「どこに座の中心を置くか」で考えたいので、指定した点が箱の中心に
+       来るようずらす。しし座との位置関係もこの中心同士で見ている。 */
     transform: translate(-50%, -50%);
     background-image:
         radial-gradient(2.6px 2.6px at 10.4% 5.0%, rgba(226,242,255,0.88), transparent 60%)  /* Beta 2.56等 */,
@@ -1737,6 +1738,39 @@ a.ice-status-pill:hover {
         radial-gradient(2.7px 2.7px at 90.8% 78.8%, rgba(226,242,255,0.91), transparent 60%)  /* Kappa 2.41等 */,
         radial-gradient(3.5px 3.5px at 83.4% 71.4%, rgba(226,242,255,0.95), transparent 60%)  /* Lambda 1.62等 */,
         radial-gradient(2.5px 2.5px at 81.1% 72.2%, rgba(226,242,255,0.85), transparent 60%)  /* Upsilon 2.69等 */;
+}
+
+/* しし座。さそり座の右上に置いている。
+   「？」を裏返したような鎌（かま。ししの頭から胸）と、
+   お尻の三角形（デネボラ・ゾスマ・チェルタン）の2つでできている。
+
+   --con-width をさそり座と同じ185pxにしてあるので、箱の幅が同じ＝
+   星同士の間隔も同じ尺度になり、2つの星座が同じ大きさに見える。
+   ただし縦横比はしし座が2.07（横長）、さそり座が0.97（ほぼ正方形）なので、
+   同じ幅でも箱の高さはしし座のほうがかなり低くなる。これは実際の星の
+   並びがそうなっているだけで、縮尺が違うわけではない。
+
+   レグルス(1.4等)は鎌の柄の先にある青白い星で、この星座で一番明るい。 */
+.ice-constellation--leo {
+    --con-x: 66%;
+    --con-y: 44%;
+    --con-width: 185px;
+    --con-aspect: 2.07;
+    /* さそり座と同じく、指定した点が箱の中心に来るようずらす。
+       こうしておくと、さそり座(42%,56%)との位置関係＝「右上」が
+       座標の数字だけで読み取れる。横に24%・縦に12%ずらしているが、
+       画面は横長なので、見た目では斜め45度に近い間隔になる。 */
+    transform: translate(-50%, -50%);
+    background-image:
+        radial-gradient(2.2px 2.2px at 5.0% 19.3%, rgba(255,238,215,0.79), transparent 60%)  /* Epsilon 2.98等 */,
+        radial-gradient(1.4px 1.4px at 10.1% 5.0%, rgba(255,238,215,0.62), transparent 60%)  /* Mu 3.88等 */,
+        radial-gradient(1.8px 1.8px at 27.5% 21.6%, rgba(255,255,255,0.7), transparent 60%)  /* Zeta 3.44等 */,
+        radial-gradient(3.0px 3.0px at 29.9% 44.5%, rgba(255,238,215,0.95), transparent 60%)  /* Algieba 2.08等 */,
+        radial-gradient(1.7px 1.7px at 20.7% 64.3%, rgba(255,255,255,0.7), transparent 60%)  /* Eta 3.49等 */,
+        radial-gradient(3.7px 3.7px at 21.4% 95.0%, rgba(226,242,255,0.95), transparent 60%)  /* Regulus 1.4等 */,
+        radial-gradient(1.9px 1.9px at 69.6% 72.8%, rgba(255,255,255,0.73), transparent 60%)  /* Chertan 3.33等 */,
+        radial-gradient(3.0px 3.0px at 95.0% 78.3%, rgba(255,255,255,0.95), transparent 60%)  /* Denebola 2.14等 */,
+        radial-gradient(2.6px 2.6px at 69.5% 40.2%, rgba(255,255,255,0.88), transparent 60%)  /* Zosma 2.56等 */;
 }
 
 /* 星座の線。

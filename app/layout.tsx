@@ -105,6 +105,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                             <polyline points="6.0,15.8 22.8,27.2 29.4,30.5 34.5,37.3 46.1,60.6 47.5,75.1 49.6,91.6 63.7,95.0 83.9,94.1 92.1,83.0 88.1,78.8 80.9,71.4 78.7,72.2" />
                         </svg>
                     </span>
+                    <span className="ice-constellation ice-constellation--leo">
+                        {/* 座標は globals.css の .ice-constellation--leo に書いた
+                            星の位置(%)に、箱の縦横比2.07を掛けたもの。
+                            片方だけ動かすと線と星がずれるので注意。 */}
+                        <svg
+                            className="ice-constellation-lines"
+                            viewBox="0 0 207.0 100"
+                            aria-hidden="true"
+                        >
+                            {/* 鎌（頭から胸）: Epsilon - Mu - Zeta - Algieba - Eta - Regulus */}
+                            <polyline points="10.4,19.3 20.9,5.0 56.9,21.6 61.9,44.5 42.8,64.3 44.3,95.0" />
+                            {/* 背中から後ろ足: Algieba - Zosma - Denebola - Chertan - Regulus */}
+                            <polyline points="61.9,44.5 143.9,40.2 196.7,78.3 144.1,72.8 44.3,95.0" />
+                            {/* お尻の三角形を閉じる一辺: Zosma - Chertan */}
+                            <polyline points="143.9,40.2 144.1,72.8" />
+                        </svg>
+                    </span>
                     <span className="ice-constellation ice-constellation--cassiopeia">
                         {/* 星をつなぐ線。角度が自由なのでCSSではなくSVGで描く。
                             viewBoxの横幅は箱の縦横比に合わせてあるので、
