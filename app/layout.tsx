@@ -96,30 +96,31 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     <span className="ice-constellation ice-constellation--scorpius">
                         <svg
                             className="ice-constellation-lines"
-                            viewBox="0 0 97.0 100"
+                            viewBox="0 0 99.0 100"
                             aria-hidden="true"
                         >
-                            {/* Beta - Delta - Pi */}
-                            <polyline points="10.1,5.0 6.0,15.8 4.8,29.2" />
-                            {/* Delta - Sigma - Antares - Tau - Epsilon - Mu - Zeta - Eta - Theta - Iota - Kappa - Lambda - Upsilon */}
-                            <polyline points="6.0,15.8 22.8,27.2 29.4,30.5 34.5,37.3 46.1,60.6 47.5,75.1 49.6,91.6 63.7,95.0 83.9,94.1 92.1,83.0 88.1,78.8 80.9,71.4 78.7,72.2" />
+                            {/* 頭(はさみ): Beta - Delta - Pi - Rho */}
+                            <polyline points="87.1,5.0 91.3,15.8 92.5,29.2 94.1,41.1" />
+                            {/* 胴から尾、毒針まで: Delta - Sigma - Antares - Tau - Epsilon - Mu - Zeta - Eta - Theta - Iota - Kappa - Lambda - Upsilon */}
+                            <polyline points="91.3,15.8 74.4,27.2 67.9,30.5 62.7,37.3 51.2,60.6 49.8,75.1 47.6,91.6 33.5,95.0 13.2,94.1 5.0,83.0 9.0,78.8 16.2,71.4 18.5,72.2" />
                         </svg>
                     </span>
                     <span className="ice-constellation ice-constellation--leo">
                         {/* 座標は globals.css の .ice-constellation--leo に書いた
-                            星の位置(%)に、箱の縦横比2.07を掛けたもの。
+                            星の位置(%)に、箱の縦横比1.11を掛けたもの。
                             片方だけ動かすと線と星がずれるので注意。 */}
                         <svg
                             className="ice-constellation-lines"
-                            viewBox="0 0 207.0 100"
+                            viewBox="0 0 111.0 100"
                             aria-hidden="true"
                         >
-                            {/* 鎌（頭から胸）: Epsilon - Mu - Zeta - Algieba - Eta - Regulus */}
-                            <polyline points="10.4,19.3 20.9,5.0 56.9,21.6 61.9,44.5 42.8,64.3 44.3,95.0" />
-                            {/* 背中から後ろ足: Algieba - Zosma - Denebola - Chertan - Regulus */}
-                            <polyline points="61.9,44.5 143.9,40.2 196.7,78.3 144.1,72.8 44.3,95.0" />
-                            {/* お尻の三角形を閉じる一辺: Zosma - Chertan */}
-                            <polyline points="143.9,40.2 144.1,72.8" />
+                            {/* 鎌（頭からたてがみ）: Epsilon - Mu - Zeta - Algieba - Eta - Regulus */}
+                            <polyline points="105.5,12.5 99.9,5.0 80.5,13.7 77.8,25.7 88.0,36.0 87.2,52.1" />
+                            {/* 胴体。Algieba - Zosma - Denebola - Chertan - Regulus と回って、
+                                Regulus - Eta - Algieba（鎌の線）でひと続きの輪になる。 */}
+                            <polyline points="77.8,25.7 33.9,23.4 5.6,43.4 33.7,40.5 87.2,52.1" />
+                            {/* 後ろ足: Chertan - Iota - Sigma - Tau - Upsilon */}
+                            <polyline points="33.7,40.5 26.0,56.9 28.2,72.0 22.6,82.7 15.3,95.0" />
                         </svg>
                     </span>
                     <span className="ice-constellation ice-constellation--cassiopeia">
