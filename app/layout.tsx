@@ -40,7 +40,7 @@ const geistMono = Geist_Mono({
 // 使われる説明文。create-next-appの初期値のままだったので、
 // このアプリの内容に書き換えている。
 export const metadata: Metadata = {
-    title: "BookShelf",
+    title: "Stella Shelf",
     description: "読んだ本・読みたい本を、ひとつの本棚にまとめて管理できるアプリ",
 };
 

@@ -53,7 +53,7 @@ export default async function Home() {
                         <path d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5C4.67 20 4 19.33 4 18.5v-13Z"></path>
                         <path d="M20 5.5c0-.83-.67-1.5-1.5-1.5H13v16h5.5c.83 0 1.5-.67 1.5-1.5v-13Z"></path>
                     </svg>
-                    <h1 className="text-4xl font-bold">BookShelf</h1>
+                    <h1 className="text-4xl font-bold">Stella Shelf</h1>
                     <p className="text-base text-[color:var(--ice-text-muted)]">
                         読んだ本・読みたい本を、ひとつの本棚にまとめて管理しよう
                     </p>

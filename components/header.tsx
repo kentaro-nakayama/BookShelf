@@ -22,7 +22,7 @@ export default async function Header() {
                 <header className="ice-header">
                     <h1>
                         <Link href={"/"} className="ice-logo">
-                            BookShelf
+                            Stella Shelf
                         </Link>
                     </h1>
                     {/* PC用の横並びメニュー。スマホ幅ではCSSで非表示になる */}
@@ -57,7 +57,7 @@ export default async function Header() {
         <header className="ice-header">
             <h1>
                 <Link href={"/"} className="ice-logo">
-                    BookShelf
+                    Stella Shelf
                 </Link>
             </h1>
             <form
