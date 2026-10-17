@@ -53,7 +53,7 @@ export default async function Home() {
                         <path d="M4 5.5C4 4.67 4.67 4 5.5 4H11v16H5.5C4.67 20 4 19.33 4 18.5v-13Z"></path>
                         <path d="M20 5.5c0-.83-.67-1.5-1.5-1.5H13v16h5.5c.83 0 1.5-.67 1.5-1.5v-13Z"></path>
                     </svg>
-                    <h1 className="text-4xl font-bold">Stella Shelf</h1>
+                    <h1 className="text-4xl font-bold italic">Stella Shelf</h1>
                     <p className="text-base text-[color:var(--ice-text-muted)]">
                         読んだ本・読みたい本を、ひとつの本棚にまとめて管理しよう
                     </p>
@@ -137,7 +137,7 @@ export default async function Home() {
     ];
 
     return (
-        <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10 sm:px-12">
+        <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col gap-6 sm:px-12">
             {/* --- あいさつ + ステータス別の件数 ------------------------------ */}
             <div className="flex flex-col gap-4">
                 <h2 className="text-xl font-bold">

@@ -17,37 +17,39 @@
 
 ## 画面紹介
 
+モバイルファーストで設計しているため、スクリーンショットはすべてスマートフォン幅（393×852）で撮影している。
+
 ### ホーム（ダッシュボード）・本棚一覧
 
-ホームは「読書中の本」と「最近追加した本」だけを抜粋したダッシュボードで、アプリを開いてすぐ読みかけの本に辿れる。本棚一覧では登録した全冊をカードで並べ、ステータスのタブで絞り込める。
+ホームは「読書中の本」と「最近追加した本」だけを抜粋したダッシュボードで、アプリを開いてすぐ読みかけの本に辿れる。本棚一覧では登録した全冊をカードで並べ、ステータスのタブで絞り込める。画面下部のタブバーから5つの画面を行き来する。
 
-<img src="docs/screenshots/home.jpg" width="600" alt="ホーム画面">
-<img src="docs/screenshots/books-list.jpg" width="600" alt="本棚一覧画面">
+<img src="docs/screenshots/sp-home.jpg" width="280" alt="ホーム画面">
+<img src="docs/screenshots/sp-books-list.jpg" width="280" alt="本棚一覧画面">
 
 ### 書籍検索・登録
 
 タイトルで検索すると楽天ブックスAPIの結果が並び、ヒットしない場合はGoogle Books APIの結果にフォールバックする。選んだ本はステータス・評価・感想・ジャンルを設定して本棚に登録する。
 
-<img src="docs/screenshots/book-search.jpg" width="600" alt="書籍検索画面">
-<img src="docs/screenshots/book-add.jpg" width="600" alt="本を追加する画面">
+<img src="docs/screenshots/sp-book-search.jpg" width="280" alt="書籍検索画面">
+<img src="docs/screenshots/sp-book-add.jpg" width="280" alt="本を追加する画面">
 
 ### 本の詳細・感想編集
 
 登録した本の詳細画面では、ステータス・星評価・感想・ジャンル・所属リストをまとめて更新できる。本棚から削除することも可能。
 
-<img src="docs/screenshots/book-detail.jpg" width="600" alt="本の詳細・感想編集画面">
+<img src="docs/screenshots/sp-book-detail.jpg" width="280" alt="本の詳細・感想編集画面">
 
 ### マイリスト
 
-ジャンルとは別に、ユーザーが自由に作れるリスト。名前と説明を付けて作成し、本の編集画面からチェックボックスで振り分ける。
+ジャンルとは別に、ユーザーが自由に作れるリスト。名前と説明を付けて作成し、本の詳細画面からチェックボックスで振り分ける。
 
-<img src="docs/screenshots/my-lists.jpg" width="600" alt="マイリスト画面">
+<img src="docs/screenshots/sp-my-lists.jpg" width="280" alt="マイリスト画面">
 
 ### アカウント
 
 Googleアカウントのプロフィールと、ステータス別の登録冊数を表示する。冊数のバッジを押すと、そのステータスで絞り込んだ本棚一覧が開く。
 
-<img src="docs/screenshots/account.jpg" width="600" alt="アカウント画面">
+<img src="docs/screenshots/sp-account.jpg" width="280" alt="アカウント画面">
 
 ## 技術スタック
 
